@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="windows-1252" ?>
+<Validator xmlns="http://www.oracle.com/soa/fp/governance/auditor" default="SOA">
+	<Policy name="all" >
+		<depends policyName="SOA"/>
+		<depends policyName="WSI"/>
+	</Policy>
+	<Policy name="SOA" >
+		<!--depends policyName="Coding Standards"/-->
+		<depends policyName="Error Handling Standards"/>
+		<depends policyName="Naming Standards"/>
+		<depends policyName="Coding Standards"/>
+		<!--depends policyName="Loose Coupling Standards"/>
+		<depends policyName="Naming Standards"/>
+		<depends policyName="Performance Standards"/>
+		<depends policyName="Reusability Standards"/>
+		<depends policyName="Security Standards"/-->
+	</Policy>
+	<!--Policy name="WSI" >
+		<depends policyName="WS-I BP Standards"/>
+	</Policy-->
+	
+	<!--Policy name="Coding Standards" >
+		<Assertion name="NameSpacePrefixesNamingInBPELCheck" />
+		<Assertion name="TonkenizedReferencesInXSLCheck" />
+		<Assertion name="TXNEnableInFireForget" />
+		<Assertion name="TXNEnableInASyncDelayed" />
+		<Assertion name="NoTargetSysIdHardWiringInXREFLookupCheck" />
+		<Assertion name="NoTargetSysIdHardWiringInDVMLookupCheck" />
+	</Policy-->
+	<Policy name="Error Handling Standards" >
+		<Assertion name="CatchBlockRemoteFaultExistInBPELCheck" />
+		<Assertion name="CatchBlockBindingFaultExistInBPELCheck" />
+		<Assertion name="ErrorHandlingProcessRefCheck" />
+		
+		<!-- Removed after discussion with Per -->
+		<!-- <Assertion name="FaultPoliciesExistCheck" /> -->
+		
+		<!-- Removed after discussion with Per -->
+		<!-- <Assertion name="FaultPoliciesExistinCFGCheck" /> -->
+		
+	</Policy>
+	<Policy name="Coding Standards" >
+		<Assertion name="BPELSwitchVariableCheckCatch1" />
+		<!--Assertion name="BPELSwitchVariableCheckCatch1Copy2" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy3" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy4" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy5" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy6" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy7" />
+		<Assertion name="BPELSwitchVariableCheckCatch1Copy8" /-->
+		<Assertion name="BPELSwitchVariableCheckCatch2" />
+		<!--Assertion name="BPELSwitchVariableCheckCatch2Copy2" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy3" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy4" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy5" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy6" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy7" />
+		<Assertion name="BPELSwitchVariableCheckCatch2Copy8" /-->
+		<Assertion name="BPELSwitchVariableCheckCatch3" />
+		<!--Assertion name="BPELSwitchVariableCheckCatch3Copy2" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy3" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy4" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy5" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy6" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy7" />
+		<Assertion name="BPELSwitchVariableCheckCatch3Copy8" /-->
+		<Assertion name="BPELErrorScopeExistsCheck" />
+		<Assertion name="NoUserInSchemaCheck" />
+		<Assertion name="AuditLevelEnabledCheck" />
+		<Assertion name="ExpirationTimeCheck" />
+		<Assertion name="BPELSetTitleExistsCheck" />
+		<Assertion name="CompositePreferenceVariableAssignedCheck" />
+		
+		
+		<!--Assertion name="TooManysAssignNotUsedCheck" />
+		<Assertion name="XSLTTranformNotUsedCheck" />
+		<Assertion name="RouteNodeErrorHandlerCheck" />
+		<Assertion name="StageErrorHandlerCheck" />
+		<Assertion name="PipelineErrorHandlerCheck" />
+		<Assertion name="ProxyAssignVariableNamingCheck" />
+		<Assertion name="ProxyStageNamingCheck" />
+		<Assertion name="ProxyRouteNodeNamingCheck" />
+		<Assertion name="ProxyDescriptionPopulatedCheck" />
+		<Assertion name="BusinessServiceDescriptionPopulatedCheck" /-->		
+		
+	</Policy>
+	<!--Policy name="Loose Coupling Standards" >
+		<Assertion name="TonkenizedReferencesInCompositeCheck" />
+		<Assertion name="TonkenizedReferencesInWSDLCheck" />
+		<Assertion name="TonkenizedReferencesInBpelCheck" />
+	</Policy-->
+	
+	<Policy name="AssertionResultTest" >
+	    <!--Assertion name="AssertionSuccessTest_OSB" /-->
+		<Assertion name="AssertionSuccessTest_SOA" />
+	</Policy>
+	<Policy name="Naming Standards" >
+		<Assertion name="BPELAssignActivityNamingCheck" />		
+		<Assertion name="BPELInvokeActivityNamingCheck" />
+		<Assertion name="BPELReplyActivityNamingCheck" />
+		<Assertion name="BPELReceiveActivityCheck" />
+		<Assertion name="BPELScopeActivityCheck" />
+		<!--Assertion name="BPELTransformNamingCheck" /-->
+	</Policy>
+	<!--Policy name="Performance Standards" >
+		<Assertion name="CompletionPersistPolicyCheck" />
+		<Assertion name="SynchAuditLogLevelCheck" />
+	</Policy>
+	<Policy name="Reusability Standards" >
+		<Assertion name="NoSchemaElementsDefinedInWSDLCheck" />
+		<Assertion name="NoLocalAdaptersInBPELCheck" />
+		<Assertion name="NoLocalSchemasInBPELCheck" />
+	</Policy>
+	<Policy name="Security Standards" >
+		<Assertion name="NoPlinkusageForSettingWSSecPropCheck" />
+		<Assertion name="NoUnamePwdInDVMCheck" />
+	</Policy>
+	<Policy name="WS-I BP Standards" >
+		<Assertion name="WSDLDocumentationIsFirstChildCheck" />
+		<Assertion name="UTFEncodingUsedinWSDLCheck" />
+		<Assertion name="UTFEncodingUsedinSchemaCheck" />
+		<Assertion name="XMLversionUsageInWSDLCheck" />
+		<Assertion name="XMLversionUsageInSchemaCheck" />
+		<Assertion name="WSDLImportUsedforWSDLOnlyCheck" />
+		<Assertion name="WSDLImportOnlyPrecededByDocCheck" />
+		<Assertion name="WSDLImportLocationNotEmptyCheck" />
+		<Assertion name="WSDLImportNoRelativeURIInNSCheck" />
+		<Assertion name="WSDLFileRootDefinitionsCheck" />
+		<Assertion name="WSDLTargetNamespaceMatchingCheck" />
+		<Assertion name="WSDLTypesOnlyPrecededByDocAndImportCheck" />
+		<Assertion name="WSDLImportsOnlyInsideDefinitionCheck" />
+		<Assertion name="SchemaNodeOnlyInsideWsdlTypesCheck" />
+		<Assertion name="SchemaImportsOnlyInsideSchemaCheck" />
+		<Assertion name="SchemaImportUsedforXSDOnlyCheck" />
+		<Assertion name="SchemaTargetNamespaceExistCheck" />
+		<Assertion name="SchemaXSDFileRootSchemaCheck" />
+		<Assertion name="SchemaTargetNamespaceMatchingCheck" />
+		<Assertion name="WSDLPartMustNotUseElementAndTypeCheck" />
+		<Assertion name="WSDLOperationMustHaveInputCheck" />
+		<Assertion name="WSDLOperationNameMustBeUniqueCheck" />
+		<Assertion name="BPELAssignActivityNamingCheck" />
+		<Assertion name="BPELInvokeActivityNamingCheck" />
+		<Assertion name="BPELReplyActivityNamingCheck" />
+	</Policy-->
+</Validator>

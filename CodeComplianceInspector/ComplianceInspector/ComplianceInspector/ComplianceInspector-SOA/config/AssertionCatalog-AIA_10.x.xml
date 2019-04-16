@@ -1,0 +1,664 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<AssertionSets version="AIA_10.x" time="Apr 30 2010 10:05:12AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor">
+   <AssertionSet name="OraleAIAAssertions" version="AIA_10.x">
+      <Property name="xpathPrefixes" value="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;;aiacfg=&quot;http://xmlns.oracle.com/aia/core/config/V1&quot;;wsdl=&quot;http://schemas.xmlsoap.org/wsdl/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;bpelx=&quot;http://schemas.oracle.com/bpel/extension&quot;;bpws=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;corecom=&quot;http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2&quot;;wsa=&quot;http://schemas.xmlsoap.org/ws/2003/03/addressing&quot;"/>
+	  <!-- BPEL Naming Standard Checks -->
+	  <!-- Assertion level properties that define the regEx for process name and process namespace -->
+      <Property name="processNameSpace" value="(http://xmlns.oracle.com/ABCSImpl/)${profile:Application}(/)(Core|(Industry/${profile:IndustryName}))?{1}/[a-zA-Z_0-9_/]*((/V)[0-9])??"/>
+      <Property name="processName" value="${profile:ServiceOperation}${profile:Application}(${profile:IndustryName})?${profile:ComponentType}(${profile:Version})?"/>
+      <Assertion name="ExtensionStandardPatternCheck2" description="ABCS Extension enablement should follow standard code pattern Assign-Invoke-Assign. For extension enablement there should be a switch activity that decides whether particular extension process should be invoked. Having a configuration property for the extension invoke in AIAConfigurationsProperties XML does this. So the switch to check if this property is set to true decides whether invocation of extension service should go through. Sample Switch activity: aia:getServiceProperty('{ProcessNamespace}ProcessName,'ABCSExtension.ConfigPropertyName',(false|true)())='true'. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ABCSImpl" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="aia:getServiceProperty\([\s]*.\{[a-zA-Z_0-9:/.]*\}[a-zA-Z_0-9]*.[\s]*,[\s]*.ABCSExtension.[a-zA-Z_0-9]*.[\s]*,[\s]*(false|true)\(\)[\s]*\)[\s]*=[\s]*.true."/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@partnerLink,'Ext') or contains(@partnerLink,'Extension')]/ancestor::bpel:switch[1]/bpel:case/@condition"/>
+      </Assertion>
+      <Assertion name="MaxExtPointsInSyncMEPCheck" description="All BPEL processes which follow SYNC Request Response pattern should not have more than 6 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:SYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathNodeCountLessThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="7"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncFFMEPABCSCheck" description="This check is for all ABCSImpl that follow Async Fire and forget MEP. Process level configurations are required to ensure the instance rollback and bypassing the dehydration store. Set configurations level property 'deliveryPersistPolicy' to 'off.immediate' in bpel.xml" fileType="bpel.xml" context="ABCSImpl,{MEP:REQUEST_ONLY}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//configurations/property/@name[contains(.,'deliveryPersistPolicy')]/parent::property[contains(.,'off.immediate')]"/>
+      </Assertion>
+      <Assertion name="GenerateScriptInputXmlNoIndustryXrefs" description="GenerateScriptInput.xml file should not reference any XREFs under the Industry source control folder. All XREFs should be stored in the Core source control folder." fileType="GenerateScriptInput.xml" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//XrefName[text() and (contains(@SourceFilePath,'/Industry/') or contains(@SourceFilePath,'\Industry\'))]/text()"/>
+      </Assertion>
+      <Assertion name="GenerateScriptInputXmlApplicationExists" description="GenerateScriptInput.xml file should contain at least one valid Application section, not including EBSes and EBFs." fileType="GenerateScriptInput.xml" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//Application[@Name!='EBSRoutingRules' and @Name!='EBS' and @Name!='EBF' and count(Service[@Location!=''])>0]/@Name"/>
+      </Assertion>
+      <Assertion name="ExtServicePlinkRuntimeLocCheck" description="All ABCS processes should have a partnerlink defined for extension enablement.          wsdlRuntimeLocation property set in the bpel.xml for this partnerlink should not be a local file. i.e., Extension concrete wsdl should not exist in the process folder.         Note that name of the partnerlink should be {processName}Extension" fileType="bpel.xml" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(ftp|http|https)(://)[a-zA-Z_0-9./:-?]*"/>
+         <Param name="xpath.search" default="//property[contains(@name,'wsdlRuntimeLocation') and contains(.,'Extension')]"/>
+      </Assertion>
+      <Assertion name="ResponseEBSInvokeSwitchCheck" description="When Async Delayed Response MEP is followed, all the Provider ABCSImpl and EBF services should have the capability to invoke the callback operation, but should have a switch case to do it only if the requester wants a callback. The 'responseCode' attribute on the verb element of the EBM is to be evaluated that the requesting service is expecting a response. Sample condition:: bpws:getVariableData('someReqMsg', 'someEBM', '/ebm:someEBM /ebm:DataArea /corecom:Sync/ @responseCode') = ‘1’" fileType="*.bpel" context="ProvABCSImpl,EBF,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default=".*(@responseCode)(.*[\s]*)*"/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@portType,'EBSResponse')]/ancestor::bpel:switch[1]/bpel:case/@condition"/>
+      </Assertion>
+      <Assertion name="SetCAVSEndPointFileExistsCheck" description="SetCAVSEndpoint.xsl should be used for transformation to set CAVS endpoint in ESBHeader. Add an attachment named SetCAVSEndpoint.xsl to your EBS ESB project, and add the transformation to all CAVS routing rules. This file should be present in all EBS projects" fileType="*" context="{pwd:.*(Setup).*},{isEBSResp:false},{isEBSOrches:false},EBS" priority="3" executor="FSExecutor" operation="fileExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="SetCAVSEndpoint.xsl"/>
+      </Assertion>
+      <Assertion name="SecurityServiceWSDLNoLocalImportCheck" description="Security Service designed for every application should import AppContext wsdl from server. Local WSDL cannot exist." fileType="bpel.xml" context="isTransAppContext:true" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(ftp|http|https)(://)[a-zA-Z_0-9./:-?]*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//property[contains(@name,'wsdlLocation') and contains(.,'AppContext')]"/>
+      </Assertion>
+      <Assertion name="MinExtPointsInASyncDRespMEPCheck" description="BPEL processes which follow ASYNC Delayed Response pattern should have minimum of 4 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="2" executor="XPathExecutor" operation="xpathNodeCountGreaterThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="3"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="BPELScopeActivityCheck" description="All Scope activities in a BPEL process should follow the Pattern: {Name describing the Scoped Tasks}{Scope|Milestone}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="[a-zA-Z_0-9_]*(Scope|Milestone){1}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:scope/@name"/>
+      </Assertion>
+      <Assertion name="NoLocalWSDLInEBSCheck" description="EBS Project should not contain local EBS WSDL. WSDL should be accessed from a web server." fileType="*" context="EBS" priority="2" executor="FSExecutor" operation="fileNotExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="*.wsdl"/>
+         <Param name="filename.exclude.regxpattern" default=".*(JMSProducer|OutboundHeader).*.wsdl"/>
+      </Assertion>
+      <Assertion name="GenerateScriptInputXmlEBSRoutingRulesExists" description="GenerateScriptInput.xml file should contain at least one Service in the 'EBSRoutingRule' Application section." fileType="GenerateScriptInput.xml" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//Application[@Name='EBSRoutingRules']/Service[@Location!='']"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncFFMEPReqCheck" description="This check is for all Requester ABCSImpl that follow Async Fire and forget MEP. Instead of SOAP binding ESB binding should be used when invoking the EBS. In bpel.xml, add 'preferredPort' property and specify the EBS Routing service to be invoked. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ReqABCSImpl,{MEP:REQUEST_ONLY}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'preferredPort')]/parent::property[contains(.,'esb')]"/>
+      </Assertion>
+      <Assertion name="BPELPickActivityNamingCheck" description="All Pick activities in a BPEL process should follow the Pattern: Pick{A name describing the functionality}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Pick){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:pick/@name"/>
+      </Assertion>
+      <Assertion name="BPELWhileActivityNamingCheck" description="All While activities in a BPEL process should follow the  Pattern:  While{Name describing the loop condition}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(While){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:while/@name"/>
+      </Assertion>
+      <Assertion name="ServiceXmlNoIndustryXrefs" description="Service.xml file should not reference any XREFs under the Industry source control folder. All XREFs should be stored in the Core source control folder." fileType="[a-zA-Z_0-9_]*Service.xml" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//XrefName[text() and (contains(@SourceFilePath,'/Industry/') or contains(@SourceFilePath,'\Industry\'))]/text()"/>
+      </Assertion>
+      <Assertion name="MaxExtPointsInFireAndForgetMEPCheck" description="All BPEL processes which follow Fire and Forget pattern should not have more than 4 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:REQUEST_ONLY}" priority="3" executor="XPathExecutor" operation="xpathNodeCountLessThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="5"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="WSDLFromCentralLocationInEBSCheck" description="All the EBS WSDLs should be accessed from a centralized location. No local EBS WSDL's allowed." fileType="*.esbsvc" context="EBS" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" default=""/>
+         <Param name="filename.exclude.regxpattern" default=".*(JMSProducer|OutboundHeader).*.wsdl"/>
+         <Param name="xpath.match.regxpattern" default="(ftp|http|https)(://)[a-zA-Z_0-9./:\-$%?\{\}]*"/>
+         <Param name="xpath.search" default="/service/serviceDefinition/wsdlURL"/>
+      </Assertion>
+      <Assertion name="CatchBlkProvABCSAllMEPNonPLCheck1" description="This is to ensure Error Handling guidelines are followed in all the Provider ABCS processes. This checks the catch blocks in ProvABCS bpel for all the partnerlink errors. Includes remote, binding and extension faults. Excludes business faults and catchAll blocks. Following activities should not exist according to guidelines. 1:invoke - Invoke AIAAsyncErrorHandlingBPELProcess should be invoked for all non-partnerlink faults. NOTE: AIAFault from extension service should have 'ext' in the namespace prefix. Compliance Inspector would report these catch blocks as failures if namespace prefix does not contain the values. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ProvABCSImpl" priority="2" executor="XMLUnitExecutor" operation="notExistsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:AllMEP/bpel:Fault/bpel:InvokeErrHandler/bpel:ABCS/bpel:P2"/>
+         <Param name="xpath.any.exists" default="true"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[(contains(@faultName,'remote') or contains(@faultName,'binding')) or contains(@faultName,'ext')]"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPReqCheck1" description="This check is for all Requester ABCSImpl that follow Async Delayed Response MEP. partnerLinkBinding that invokes the EBS should contain a property 'transaction' and it should be set to 'participate'. This is required for bringing all processes in an integration scenario under one transaction. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'transaction')]/parent::property[contains(.,'participate')]"/>
+      </Assertion>
+      <Assertion name="BPELTerminateActivityNamingCheck" description="All Terminate activities in a BPEL process should follow the Pattern:  Terminate{reason of termination}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Terminate){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:terminate/@name"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPReqCheck" description="This check is for all Requester ABCSImpl that follow Async Delayed Response MEP. Instead of SOAP binding ESB binding should be used when invoking the EBS. In bpel.xml, add 'preferredPort' property and specify the EBS Routing service to be invoked. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'preferredPort')]/parent::property[contains(.,'esb')]"/>
+      </Assertion>
+      <Assertion name="PortTypeDocInABCSImplWSDLCheck" description="ABCS WSDL Port Types should be documented as per AIA Documentation standards. Please refer to Integration Developer Guide for annotation standards. All the documentation elements need to be present" fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl" context="ABCSImpl" priority="3" executor="XMLUnitExecutor" operation="compareNodeWithRegExXMLCheck" category="AIA - Documentation Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.external.search.xpath" value="//ABCSwsdlPortTypeDoc/wsdl:documentation"/>
+         <Param name="xpath.search" default="//wsdl:portType/wsdl:documentation"/>
+      </Assertion>
+      <Assertion name="BPELReplyActivityNamingCheck" description="All Reply activities in a BPEL process should follow the Pattern: Reply{Message Name}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Reply){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:reply/@name"/>
+      </Assertion>
+      <Assertion name="CatchBlkProvABCSSyncCheck" description="This is to ensure Error Handling guidelines are followed in all the Provider ABCS processes. This checks the catch blocks in SYNC REQ_RESP ProvABCS bpel for all the errors. Following activities should exist according to guidelines. 1:Reply -Reply to the partnerlink which initiated the process (same port and operation) with 'fault'. NOTE: Reply activity portType should contain string 'ProvABCSImpl'. " fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ProvABCSImpl,{MEP:SYNC_REQ_RESPONSE}" priority="2" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:SyncMEP/bpel:Fault/bpel:ProvABCS/bpel:P2"/>
+         <Param name="xpath.search" default="/bpel:process/bpel:faultHandlers/bpel:catch | /bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="EBMToFaultXSLFileExistsInProvCheck" description="Provider ABCS Impl Project should contain EBM_to_Fault.xsl for Fault Handling." fileType="*" context="ProvABCSImpl" priority="3" executor="FSExecutor" operation="fileExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="EBM_to_Fault.xsl"/>
+      </Assertion>
+      <Assertion name="CatchBlkProvABCSASyncRespCheck1" description="This is to ensure Error Handling guidelines are followed in all the Provider ABCS processes. This checks the catch blocks in ASYNC REQ_RESP ProvABCS bpel for all the errors. Following activities should exist according to guidelines. 1:Construct fault message  -assign activity, which contains a transformation that takes EBM as input and ResponseEBM as output. The transformation can take systemFault message as input param. " fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ProvABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="4" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:ASyncDelayedRespMEP/bpel:Fault/bpel:ProvABCS/bpel:P4"/>
+         <Param name="xpath.search" default="/bpel:process/bpel:faultHandlers/bpel:catch | /bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="NoLocalPartnerLinkWSDLInEBFCheck" description="EBF Project can only contain the following types of WSDL : Project WSDL, Project Extension Abstract WSDL, _Properties WSDL(which is used for correlation) and any Ref WSDLs to partnerLinks. No partnerLink should refer to a local WSDL. It should always be through a Ref WSDL.Note:A ref WSDL should end with Ref.wsdl" fileType="*" context="EBF" priority="2" executor="FSExecutor" operation="filesMatchPatternCheck" category="AIA - Architecture Standards">
+         <Param name="filename.match.regxpattern" default="[a-zA-Z_0-9_/]*(EBF|ExtensionAbstract|ExtAbstract|(R|r)ef|RuntimeFault|(P|p)roperties)(V[0-9]*)??.wsdl"/>
+         <Param name="filename.search.regxpattern" default="*.wsdl"/>
+      </Assertion>
+      <Assertion name="NoLocalSchemasInEBFCheck" description="EBF Process folder should not contain any schema files. All Utility schema should be accessed from a web server." fileType="*" context="EBF" priority="2" executor="FSExecutor" operation="fileNotExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="*.xsd"/>
+      </Assertion>
+      <Assertion name="NoLocalSchemaImportsInWSDLOfABCSorEBFCheck" description="No local schema should be Imported In process WSDL of ABCS or EBF." fileType="[a-zA-Z_0-9]*(ABCSImpl|EBF)((/V)[0-9]*)??.wsdl" context="ABCSImpl,EBF" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(ftp|http|https)(://)[a-zA-Z_0-9./:\-$%?\{\}]*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//xsd:import/@schemaLocation"/>
+      </Assertion>
+      <Assertion name="OperationTypeDocInABCSImplWSDLCheck" description="ABCS WSDL Operation Types should be documented as per AIA Documentation standards. Please refer to Integration Developer Guide for annotation standards. All the documentation elements need to be present" fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl" context="ABCSImpl" priority="3" executor="XMLUnitExecutor" operation="compareNodeWithRegExXMLCheck" category="AIA - Documentation Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.external.search.xpath" value="//ABCSwsdlOperationDoc/wsdl:documentation"/>
+         <Param name="xpath.search" default="//wsdl:operation/wsdl:documentation"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPProvCheck" description="This check is for all Provider ABCSImpl that follow Async Delayed Response MEP. Instead of SOAP binding ESB binding should be used when invoking the ResponseEBS. In bpel.xml, add 'preferredPort' property and specify the EBS Routing service to be invoked. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ProvABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'preferredPort')]/parent::property[contains(.,'esb')]"/>
+      </Assertion>
+      <Assertion name="NoTargetSysIdHardWiringInXREFLookupCheck" description="Target SystemId should not be hardwired in XREF lookup when used in XSL. Syntax used should be xref:lookupXRef('XREF_NAME',$XREFSourceCol,XPATH,$XREFTargetCol,true()|false()) where XREF_NAME can contain alphanumeric and underscores and XPATH can contain any XPATH Expression. Note: targetId column could be one of the following: 1) An Xpath containing EBMHeader. 2) 'COMMON' 3) Variable which does not contain a hard coded string value. 4) Xpath function." fileType="*.xsl" context="" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*[a-z_A-Z_0-9]*:lookupXRef(1M)?\([\s]*.*[\s]*,[\s]*((\$.*)|(.COMMON.)|([A-Z_a-z0-9:]*\(.*\)))[\s]*,[\s]*.*[\s]*,[\s]*((\$.*)|(.COMMON.)|([A-Z_a-z0-9:]*\(.*\))|(.*/[a-z_A-Z_0-9]*:EBMHeader.*))[\s]*,.*\).*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[contains(.,':lookupXRef')]"/>
+      </Assertion>
+      <Assertion name="MaxExtPointsInASyncDRespMEPCheck" description="All BPEL processes which follow ASYNC Delayed Response pattern should not have more than 6 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathNodeCountLessThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="7"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="BPELDecideActivityNamingCheck" description="All Decide activities in a BPEL process should start with a prefix of Decide. Pattern: Decide{name of decision}." fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(Decide){1}(([a-zA-Z_])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:decide/@name"/>
+      </Assertion>
+      <Assertion name="ExtServiceOperationSyncCheck" description="AAll operations in ABCS extension service should be synchronous. Every operation defined in the Extension wsdl should have an output message." fileType="[a-zA-Z_0-9]*(ExtensionAbstract).wsdl" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=""/>
+         <Param name="xpath.search" default="//wsdl:operation[not(wsdl:output)]/@name"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncFFMEPABCSCheck1" description="This check is for all ABCSImpl that follow Async Fire and forget MEP. Process level configurations are required to ensure the instance rollback and bypassing the dehydration store. Set configurations level property 'transaction' to 'participate' in bpel.xml" fileType="bpel.xml" context="ABCSImpl,{MEP:REQUEST_ONLY}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//configurations/property/@name[contains(.,'transaction')]/parent::property[contains(.,'participate')]"/>
+      </Assertion>
+      <Assertion name="BPELFlowActivityNamingCheck" description="All Flow activities in a BPEL process should end with a suffix of Flow. Pattern: {Name describing concurrent tasks}Flow" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="[a-zA-Z_0-9_]*(Flow){1}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:flow/@name"/>
+      </Assertion>
+      <Assertion name="MessageTypeDocInABCSImplWSDLCheck" description="ABCS WSDL message Types should be documented as per AIA Documentation standards. Please refer to Integration Developer Guide for annotation standards. All the documentation elements need to be present" fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl" context="ABCSImpl" priority="3" executor="XMLUnitExecutor" operation="compareNodeWithRegExXMLCheck" category="AIA - Documentation Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.external.search.xpath" value="//ABCSwsdlMessageDoc/wsdl:documentation"/>
+         <Param name="xpath.search" default="//wsdl:message/wsdl:documentation"/>
+      </Assertion>
+      <Assertion name="EBMIDUsedForCorrelation" description="ebmprefix:EBMName/corecom:EBMHeader/corecom:EBMID (in EBM)or ebmprefix:EBMName/corecom:EBMHeader/corecom:RequestEBMID (in ResponseEBM) should be always used for correlation in ABCS processes that implement Async Delayed Response pattern. //bpws:propertyAlias/@query should contain either of the above xpath where EBMName and prefixes are replaced by your prefix:EBM" fileType="[a-zA-Z_0-9_]*(ABCSImpl)((V)[0-9]*)??.wsdl" context="ABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="4" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="[a-zA-Z_0-9:/]*(/)([a-zA-Z_0-9:/]*)(EBM/)([a-zA-Z_0-9:/]*)(EBMHeader/)([a-zA-Z_0-9:/]*)(RequestEBMID|EBMID)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpws:propertyAlias/@query"/>
+      </Assertion>
+      <Assertion name="NoHardWiringUnamePwdInEndpointURICheck" description="EndPoint URLs defined in AIAConfiguration properties should not contain UserName and Password values. OWSM should be used for all Web Services invocation authentication purposes." fileType="AIAServiceConfigurationProperties.xml" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathValueNotContainsCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${unamePwdString}" default="UserName;Password;uname;pwd;username;password"/>
+         <Param name="xpath.search" default="//aiacfg:Property[contains(@name,'EndpointURI')]"/>
+      </Assertion>
+      <Assertion name="BPELSequenceActivityNamingCheck" description="All Sequence activities in a BPEL process should follow the Pattern: {Name describing the Sequence Tasks}Sequence" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="[a-zA-Z_0-9_]*(Sequence){1}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:sequence/@name"/>
+      </Assertion>
+      <Assertion name="MinExtPointsInFireAndForgetMEPCheck" description="All BPEL processes which follow Fire and Forget pattern should have minimum of 2 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:REQUEST_ONLY}" priority="2" executor="XPathExecutor" operation="xpathNodeCountGreaterThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="1"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="AIAServiceConfigFileExistsCheck" description="Every ABCS Impl should have a service configuration properties file named AIAServiceConfigurationProperties.xml in the project folder." fileType="*" context="ABCSImpl,EBF" priority="3" executor="FSExecutor" operation="fileExistCheck" category="AIA - Development Standards">
+         <Param name="filename.search.regxpattern" default="AIAServiceConfigurationProperties.xml"/>
+      </Assertion>
+      <Assertion name="CatchBlockRemoteFaultExistInBPELCheck" description="Catch block has to be defined for remoteFault in BPEL process." fileType="*.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" default="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:remoteFault')]/@faultVariable"/>
+      </Assertion>
+      <Assertion name="ABCSExtWSDLExistsAndNamingCheck" description="ABCS Extension Abstract WSDL name should be according to the AIA Naming Standards Guide. Pattern: {ServiceOperation}{AppName}({Industry})?ABCSImplExtensionAbstract{Version(optional)}(.wsdl). Note: The artifact names i.e., industry, operation etc should be consistent in process naming, target namespace and WSDL. e.g., (CreateCustomerPartyList)(BRM)(Communications)(ProvABCSImpl)(V2)(ExtensionAbstract).wsdl, (CreateCustomerPartyList)(Ebiz)(ProvABCSImpl)(ExtensionAbstract).wsdl." fileType="*" context="ABCSImpl" priority="3" executor="FSExecutor" operation="filesMatchPatternCheck" category="AIA - Naming Standards">
+         <Param name="filename.match.regxpattern" default="${profile:ServiceOperation}${profile:Application}(${profile:IndustryName})?${profile:ComponentType}((V)[0-9]*)??(ExtensionAbstract|ExtAbstract).wsdl"/>
+         <Param name="filename.search.regxpattern" default="[a-zA-Z_0-9_]*(Extension|Ext)(Abstract)((V)[0-9]*)??.wsdl"/>
+      </Assertion>
+      <Assertion name="ExtServicePlinkExistForABCSCheck" description="All ABCS processes should have a partnerlink defined for extension enablement. Name of the partnerlink should be {processName}Extension" fileType="*.bpel" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=""/>
+         <Param name="xpath.search" default="//bpel:partnerLink[contains(@name,'Extension') and contains(@partnerLinkType,'Extension')]"/>
+      </Assertion>
+      <Assertion name="EBMHeaderVariableInABCSCheck" description="ABCSImpl BPEL file should contain a variable called EBM_HEADER. This variable is used by Error handling process to get EBMHeader values for logging and notifications. Please refer to Integration Developer Guide for further details." fileType="*.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:variable[contains(@name,'EBM_HEADER')]/@name"/>
+      </Assertion>
+      <Assertion name="CatchBlkProvABCSAllMEPNonPLCheck" description="This is to ensure Error Handling guidelines are followed in all the Provider ABCS processes. This checks the catch blocks in ProvABCS bpel for all the non partnerlink errors and extension service faults. Includes business faults, subLanguageExecution faults and catchAll blocks. Excludes extension service fault and system faults (partnerlink errors). Following activities should exist according to guidelines. 1:invoke - Invoke AIAAsyncErrorHandlingBPELProcess should be invoked for all non-partnerlink faults. NOTE: AIAFault from extension service should have 'ext' in the namespace prefix. Compliance Inspector would report these catch blocks as failures if namespace prefix does not contain the values. NOTE: Invoke activity can be substituted by java embedding activity also. There should be a invocation of oracle.apps.aia.core.eh.IAIAErrorHandler.sendNotification() method. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ProvABCSImpl" priority="2" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:AllMEP/bpel:Fault/bpel:InvokeErrHandler/bpel:ABCS/bpel:P2"/>
+         <Param name="xpath.any.exists" default="true"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[not((contains(@faultName,'remote') or contains(@faultName,'binding')) or contains(@faultName,'ext') or contains(@faultName,'abcs'))] | //bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="NoLocalSchemasInABCSCheck" description="ABCS Impl Process folder should not contain any schema files. All Utility schema should be accessed from a web server." fileType="*" context="ABCSImpl" priority="2" executor="FSExecutor" operation="fileNotExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="*.xsd"/>
+      </Assertion>
+      <Assertion name="ABCSProcessWSDLExistsAndNamingCheck" description="ABCS BPEL process WSDL name should be according to the AIA Naming Standards Guide. Pattern: {ServiceOperation}{Application}({IndustryName})?{ComponentType}{Version(optional)}.wsdl. Note: The artifact names i.e., industry, operation etc should be consistent in process naming, target namespace and WSDL. e.g.,(CreateCustomerPartyList)(BRM)(Communications)(ProvABCSImpl)(V2).wsdl ,(CreateCustomerPartyList)(Ebiz)(ProvABCSImpl).wsdl." fileType="*" context="ABCSImpl" priority="3" executor="FSExecutor" operation="filesMatchPatternCheck" category="AIA - Naming Standards">
+         <Param name="filename.match.regxpattern" default="${profile:ServiceOperation}${profile:Application}(${profile:IndustryName})?${profile:ComponentType}((V)[0-9]*)??.wsdl"/>
+         <Param name="filename.search.regxpattern" default="[a-zA-Z_0-9_]*(ABCSImpl)((V)[0-9]*)??.wsdl"/>
+      </Assertion>
+      <Assertion name="NoTargetSysHardWiringInPopulateXrefCheck" description="Target SystemId should not be hardwired when populateXRef is used in XSL. Syntax used should be orcl:populateXRefRow ('XREF_NAME',$XREFSourceCol,SourceValue,$XREFTargetCol,TargetValue,'') where XREF_NAME can contain alphanumeric and underscore characters and XREFSourceCol,XREFTargetCol should not be hard coded." fileType="*.xsl" context="" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*populateXRefRow(1M)?\([\s]*.*[\s]*,[\s]*((\$)|(.COMMON)).*[\s]*,[\s]*.*[\s]*,[\s]*((\$)|(.COMMON)|(.*/[a-z_A-Z_0-9]*:EBMHeader/[a-z_A-Z_0-9]*:Target/[a-z_A-Z_0-9]*:ID)).*[\s]*\)[\s]*.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[contains(.,':populateXRef')]"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPABCSCheck" description="This check is for all ABCSImpl that follow Async Delayed Response MEP. Process level configurations are required to ensure the instance rollback and bypassing the dehydration store. Set configurations level property 'deliveryPersistPolicy' to 'off.immediate' in bpel.xml" fileType="bpel.xml" context="ABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//configurations/property/@name[contains(.,'deliveryPersistPolicy')]/parent::property[contains(.,'off.immediate')]"/>
+      </Assertion>
+      <Assertion name="BPELInvokeActivityNamingCheck" description="All Invoke activities in a BPEL process should follow the Pattern: Invoke{Partner Link Name}{Call/Start}{Operation}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(Invoke){1}(([a-zA-Z_])([a-zA-Z_0-9])*)(Call|Start){1}(([a-zA-Z_])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:invoke/@name"/>
+      </Assertion>
+      <Assertion name="FaultPolicyFileExistsInABCSAndEBFCheck" description="FaultPolicy file should exist for every ABCS and EBF process in a PIP. Make sure fault policy naming standards are followed. i.e., {processName}FaultPolicy.xml .Also the policy file should be located in the SeedData folder. Note: SeedData folder should be a directory within the source directory." fileType="*" context="ABCSImpl,EBF,SeedData" priority="2" executor="FSExecutor" operation="correspondingFilesMatchPatternCheck" category="AIA - Architecture Standards">
+         <Param name="working.directory" default="SeedData"/>
+         <Param name="filename.match.regxpattern" default="InputFilePatternFaultPolicy.xml"/>
+         <Param name="filename.search.regxpattern" default="[a-zA-Z_0-9_]*(ABCSImpl|EBF)((V)[0-9]*)??.bpel"/>
+         <Param name="filename.exclude.regxpattern" default=""/>
+      </Assertion>
+      <Assertion name="ABCSDoesNotPopulateTargetCheck" description="This is to ensure that target node is not populated during ABM to EBM transformation in Requester ABCSImpl. Target should be populated via routing rules in EBS or should be derived from AIA configurations file. For additional information refer to Integration Developer Guide." fileType="*.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathValuesNotMatchPatternCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="([a-zA-Z_0-9\s]*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//corecom:Target/descendant::corecom:ID/text()[normalize-space()]|//corecom:Target/descendant::corecom:ID/xsl:text[normalize-space()]|//corecom:Target/descendant::corecom:ID/xsl:value-of/@select[normalize-space()]"/>
+      </Assertion>
+      <Assertion name="BPELReceiveActivityCheck" description="All receive activities in a BPEL process should follow the Pattern: receive{A name describing the functionality}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Receive){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:receive/@name"/>
+      </Assertion>
+      <Assertion name="RunTimeFaultWSDLimportInABCSImplCheck" description="Runtime Fault WSDL should be imported in every ABCS BPEL Process for fault handling. RuntimeFaultMessage is defined in this wsdl which are used to define all system faults." fileType="[a-zA-Z_0-9]*(Prov|Req)ABCSImpl((/V)[0-9])??.wsdl" context="" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" default="wsdl=&quot;http://schemas.xmlsoap.org/wsdl/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+         <Param name="xpath.search" default="//wsdl:import[contains(@location,'RuntimeFault.wsdl')]/@location"/>
+      </Assertion>
+      <Assertion name="EBMHeaderVariableAssignedCheck" description="ABCSImpl BPEL file should contain a variable called EBM_HEADER and it should be assigned a value from a incoming EBM. This variable is used by Error handling process to get EBMHeader values for logging and notifications. Please refer to Integration Developer Guide for further details." fileType="*.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:assign/bpel:copy/bpel:to[contains(@variable,'EBM_HEADER')]"/>
+      </Assertion>
+      <Assertion name="DynamicPLinkForSecServiceInReqABCSCheck" description="Dynamic partner link should be used to invoke security service. The endpoint location of the security service has to be obtained from the AIAConfig properties configuration file. Note::Please use the standard assign activity name within the security service invocation scope :GetEndpointLocation" fileType="*.bpel" context="ReqABCSImpl" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@partnerLink,'TransformAppContext')]/parent::*/descendant::*/bpel:assign/bpel:copy/bpel:to/@partnerLink[contains(.,'TransformAppContext')]"/>
+      </Assertion>
+      <Assertion name="BPELAssignActivityNamingCheck" description="All Assign activities in a BPEL process should start with a prefix of Assign followed by activity name. Pattern: Assign{Name of what is being assigned}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(Assign|Xform|Get|Create|Update|Delete){1}(_)??(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:assign/@name"/>
+      </Assertion>
+      <Assertion name="NoPlinkusageForSettingWSSecPropCheck" description="PIPS shouldn’t use partnerlink wsseusername and wssepassword properties to set ws-security.  OWSM should be used for all Web Services invocation authentication purposes." fileType="bpel.xml" context="ABCSImpl,EBF" priority="1" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${securityTokenNames}" default=""/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//partnerLinkBinding/property[contains(@name,'wsseusername') or contains(@name,'wssepassword')]/parent::*/@name"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationCheck1" description="This is to ensure EBM Header is fully populated in the Requester ABCSImpl. This check is to ensure MessageProcessingInstruction should contain all the elements in the ReqABM_to_EBM xsl. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathListExistCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.2.search" default="//corecom:DefinitionID"/>
+         <Param name="xpath.1.search" default="//corecom:EnvironmentCode"/>
+         <Param name="local.metadir" default="AIAComponents"/>
+         <Param name="xpath.0.search" default="//corecom:MessageProcessingInstruction"/>
+      </Assertion>
+      <Assertion name="DynamicPlinkEnablementCheck" description="Dynamic PartnerLink construct should be used for all PartnerLinks defined to invoke services except the EBS. Also excluded are invokes to extension service and AIAErrorHandling service. This approach is followed since the target end point could be either the Composite Application Validation System (CAVS) or a concrete end point for one of the application instances. Note that this assertion does not check for correctness of the dynamic partnerlink code. It checks whether any variable has been constructed and assigned to the same partnerlink which is used for invoke. i.e., There should be a copy activity which copies the WSA EndpointReference variable to the partnerlink. Note:: partnerLinks which are mentioned above to be excluded should contain one of the following string values: EBS,Ext,AIAAsyncErrorHandlingBPELProcess,TransformAppContext. " fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathValueCorrespondingXpathExistCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:to/@partnerLink[contains(.,'#SUBVALUE#')]"/>
+         <Param name="xpath.substitute.value.xpath" default="//bpel:invoke[not(contains(@partnerLink,'EBS') or contains(@partnerLink,'ABCS') or contains(@partnerLink,'EBF') or contains(@partnerLink,'SubProcess') or contains(@partnerLink,'Util') or contains(@partnerLink,'Ext') or contains(@partnerLink,'AIAAsyncErrorHandlingBPELProcess') or contains(@partnerLink,'TransformAppContext'))]/@partnerLink"/>
+      </Assertion>
+      <Assertion name="CatchBlkProvABCSASyncRespCheck" description="This is to ensure Error Handling guidelines are followed in all the Provider ABCS processes. This checks the catch blocks in ASYNC REQ_RESP ProvABCS bpel for all the errors. Following activities should exist according to guidelines. 1:Invoke -invoke ResponseEBS once all the fault handling is done. " fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ProvABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:ASyncDelayedRespMEP/bpel:Fault/bpel:ProvABCS/bpel:P2"/>
+         <Param name="xpath.search" default="/bpel:process/bpel:faultHandlers/bpel:catch | /bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="ABCSTargetNameSpacesCheck" description="All targetNameSpaces for ABCS processes should follow the standard pattern defined in AIA Naming Standards guide :: 'http://xmlns.oracle.com/ABCSImpl/[Short Application Name]/(Core|(Industry/IndustryName))/ServiceName/version(optional)'. Note: 'ServiceName' in the above mentioned targetNameSpace should also be according to standards ({ServiceOperation}{Application}{IndustryName(if not core process)}{ComponentType}). e.g., (CreateCustomerPartyList)(BRM)(Communications)(ProvABCSImpl), (CreateCustomerPartyList)(Ebiz)(ProvABCSImpl). TargetNameSpace example:  'http://xmlns.oracle.com/ABCSImpl/Siebel/Industry/Comms/SyncItemCompositionListSiebelCommsProvABCSImpl/V1'." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl" context="ABCSImpl" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="(http://xmlns.oracle.com/ABCSImpl/)${profile:Application}(/)(Core|(Industry/${profile:IndustryName}))?{1}/[a-zA-Z_0-9_/]*(${profile:ServiceOperation}${profile:Application}(${profile:IndustryName})?${profile:ComponentType})((/V)[0-9])??"/>
+         <Param name="xpath.search" default="/wsdl:definitions/@*[contains(local-name(.),'targetNamespace')]"/>
+      </Assertion>
+      <Assertion name="NoTargetSysIdHardWiringInDVMLookupCheck" description="Target SystemId should not be hardwired in DVM lookup when used in XSL. Syntax used should be orcl:lookup-dvm('DVM_NAME',$DVMSourceCol,XPATH,$DVMTargetCol,'') where DVM_NAME can contain alphanumeric and underscore characters and XPATH can contain any XPATH Expression. Note: targetId column could be one of the following: 1) An Xpath containing EBMHeader. 2) 'COMMON' 3) Variable which does not contain a hard coded string value. 4) Xpath function." fileType="*.xsl" context="" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*[a-z_A-Z_0-9]*:lookup-dvm\([\s]*.*[\s]*,[\s]*(([a-zA-Z_0-9:]*\(.*\))|(\$)|(.COMMON)|(.*_USER_OU.)).*[\s]*,[\s]*.*[\s]*,[\s]*(([a-zA-Z_0-9:]*\(.*\))|(\$)|(.COMMON)|(.*/[a-z_A-Z_0-9]*:EBMHeader.*)|(.*_RESP.)).*[\s]*\)[\s]*.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[contains(.,':lookup-dvm')]"/>
+      </Assertion>
+      <Assertion name="NoUnamePwdInDVMCheck" description="DVMs stores should have no credentials stored. They should not contain UserName and Password values. OWSM should be used for all Web Services invocation authentication purposes." fileType="*.xml" context="" priority="1" executor="XPathExecutor" operation="xpathValueNotContainsCheck" category="AIA - Security Standards" fileFilter="{DIR:DVM}">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${unamePwdString}" default="UserName;Password;uname;pwd;username;password"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//column/@name"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationCheck2" description="This is to ensure EBM Header is fully populated in the Requester ABCSImpl. This check is to ensure Sender should contain all the elements in the ReqABM_to_EBM xsl. Elements not found will be reported in violations. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathListExistCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xpath.9.search" default="//corecom:ContactEmail"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.1.search" default="//corecom:Sender/corecom:ID"/>
+         <Param name="xpath.2.search" default="//corecom:Description"/>
+         <Param name="local.metadir" default="AIAComponents"/>
+         <Param name="xpath.6.search" default="//corecom:Application/corecom:ID"/>
+         <Param name="xpath.5.search" default="//corecom:Application"/>
+         <Param name="xpath.0.search" default="//corecom:Sender"/>
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.7.search" default="//corecom:Application/corecom:Version"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.4.search" default="//corecom:CallingServiceName"/>
+         <Param name="xpath.10.search" default="//corecom:ContactPhoneNumber"/>
+         <Param name="xpath.8.search" default="//corecom:ContactName"/>
+         <Param name="xpath.3.search" default="//corecom:IPAddress"/>
+      </Assertion>
+      <Assertion name="ExtensionStandardPatternCheck" description="ABCS Extension enablement should follow standard code pattern Assign-Invoke-Assign. Assign the value from extension service response to the same variable, which was used to copy the value into extension service request. 1st Assign activity 'from' variable and 2nd assign activity 'to' variable should be the same. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@partnerLink,'Ext') or contains(@partnerLink,'Extension')]/ancestor::bpel:switch[1]/descendant::bpel:sequence[not(contains(bpel:assign[2]/bpel:copy/bpel:to/@variable,bpel:assign[1]/bpel:copy/bpel:from/@variable))]/@name"/>
+      </Assertion>
+      <Assertion name="OperationsNotExistInRefWSDLCheck" description="Reference WSDLs {PartnerLink Ref WSDL's}in a BPEL process cannot have operations defined." fileType="[a-zA-Z_0-9]*(R|r)ef.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//wsdl:operation/@name"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationMessageProcInsCheck" description="This is to ensure that message Processing Instruction has been populated as per standards in EBM Header in ABM-to-EBM xsl. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="4" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//EBMHeaderPopulation/corecom:EBMHeader/P4/corecom:MessageProcessingInstruction"/>
+         <Param name="xpath.search" default="//corecom:EBMHeader/corecom:MessageProcessingInstruction"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncFFMEPReqCheck1" description="This check is for all Requester ABCSImpl that follow Async Fire and forget MEP. partnerLinkBinding that invokes the EBS should contain a property 'transaction' and it should be set to 'participate'. This is required for bringing all processes in an integration scenario under one transaction. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'transaction')]/parent::property[contains(.,'participate')]"/>
+      </Assertion>
+      <Assertion name="CorrelationUsedWithReceiveforAsync" description="When Async Delayed Response MEP is followed, Requester ABCS should receive message from ResponseEBS with correlation. Following attributes should be set as follows: initiate=no, set=CorrelationSetName. Note that operation of the receive activity should contain string 'EBS'." fileType="[a-zA-Z_0-9_]*(ABCSImpl)((V)[0-9]*)??.bpel" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:receive[contains(@operation,'EBS') or contains(@operation,'Callback') or contains(@variable,'EBS')]/bpel:correlations/bpel:correlation[contains(@initiate,'no')]"/>
+      </Assertion>
+      <Assertion name="BPELWaitActivityNamingCheck" description="All Wait activities in a BPEL process should follow the Pattern: Wait{Followed by a name describing the reason for waiting}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Wait){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:wait/@name"/>
+      </Assertion>
+      <Assertion name="CatchBlockBindingFaultExistInBPELCheck" description="Catch block has to be defined for BindingFault in BPEL process." fileType="*.bpel" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" default="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:bindingFault')]/@faultVariable"/>
+      </Assertion>
+      <Assertion name="MessageTypeNotExistInRefWSDLCheck" description="Reference WSDLs {PartnerLink Ref WSDL's}in a BPEL process cannot have messages defined." fileType="[a-zA-Z_0-9]*(R|r)ef.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//wsdl:message/@name"/>
+      </Assertion>
+      <Assertion name="CorrelationUsedWithInvokeforAsync" description="When Async Delayed Response MEP is followed, Requester ABCS should invoke EBS with correlation. Following attributes should be set as follows: initiate=yes, set=CorrelationSetName, pattern=out." fileType="[a-zA-Z_0-9_]*(ABCSImpl)((V)[0-9]*)??.bpel" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@partnerLink,'EBS') and contains(@portType,'EBS')]/bpel:correlations/bpel:correlation[contains(@initiate,'yes') and contains(@pattern,'out')]"/>
+      </Assertion>
+      <Assertion name="CatchBlkABCSAllMEPCheck" description="This is to ensure Error Handling guidelines are followed in all ABCS processes. This check is for all the catch and catchAll blocks in bpel. Following activities should exist according to guidelines. 1:throw - rethrow the fault so that the faulted instance becomes visible in BPEL console. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ABCSImpl" priority="2" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:AllMEP/bpel:Fault/bpel:Throw/bpel:ABCS/bpel:P2"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch|//bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="NoLocalPartnerLinkWSDLInABCSCheck" description="ABCS Project can only contain the following types of WSDL :Project WSDL, Project Extension Abstract WSDL, _Properties WSDL(which is used for correlation) and any Ref WSDLs to partnerLinks. No partnerLink should refer to a local WSDL. It should always be through a Ref WSDL. Note:A ref WSDL should end with Ref.wsdl" fileType="*" context="ABCSImpl" priority="2" executor="FSExecutor" operation="filesMatchPatternCheck" category="AIA - Architecture Standards">
+         <Param name="filename.match.regxpattern" default="[a-zA-Z_0-9_/]*(ABCSImpl|ExtensionAbstract|ExtAbstract|(R|r)ef|RuntimeFault|(P|p)roperties)(V[0-9]*)??.wsdl"/>
+         <Param name="filename.search.regxpattern" default="*.wsdl"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationWSACheck" description="This check is for all ReqABCSImpl that follow Async Delayed Response pattern. This checks if Requester ServiceName is set in EBMHeader in the ABM-to-EBM transformation. Set the EBMHeader/Sender/WSAddress/wsa:ReplyTo/wsa:ServiceName to the name of the requesting service name in ABM to EBM transformation. This will be the name of the service that needs to be invoked by EBS for processing the response message. In most of the situations, it will be the same Requester ABC service that would also be responsible for processing the response message coming from provider ABC service. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.search" default="//corecom:WSAddress/wsa:ReplyTo/wsa:ServiceName"/>
+      </Assertion>
+      <Assertion name="ProcessWSDLNameSpacePrefixesNamingCheck" description="In an ABCS or EBF process WSDL, all the namespace prefixes should follow AIA Naming standard guidelines. Default generated ns1, ns2 prefixes are not allowed and have to be changed." fileType="[a-zA-Z_0-9]*(ABCSImpl|EBF)((/V)[0-9])??.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=""/>
+         <Param name="xpath.search" default="//namespace::*[starts-with(name(),'ns')]"/>
+      </Assertion>
+      <Assertion name="CorrelationSetsDefinedforAsyncReqABCS" description="When Async Delayed Response MEP is followed, Requester ABCS should have at least one correlationSet defined to be used with invoke and receive activities." fileType="[a-zA-Z_0-9_]*(ABCSImpl)((V)[0-9]*)??.bpel" context="ReqABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:correlationSets/bpel:correlationSet/@properties"/>
+      </Assertion>
+      <Assertion name="wsdlRuntimeLocationExistForPlinkCheck" description="Property wsdlRuntimeLocation should identify the esb port name from the deployed EBS wsdl on the soa server. Any EBS partnerlink should contain the wsdlRuntimeLocation property set in bpel.xml" fileType="bpel.xml" context="ReqABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" default=""/>
+         <Param name="xpath.match.regxpattern" default="(ftp|http|https)(://)[a-zA-Z_0-9./:\-$%?\{\}]*"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property[contains(@name,'wsdlRuntimeLocation')]"/>
+      </Assertion>
+      <Assertion name="AIAConfigEntryDefaultSystemIdDefinedCheck" description="Config File Should have an entry that would specify the Default SystemID to use for the Service. Every ABCS Impl Service is coded for a specific application. So this entry (Default.SystemID) would specify the default id to use. Note: Make sure all elements are declared under the target namespace 'http://xmlns.oracle.com/aia/core/config/V1'." fileType="AIAServiceConfigurationProperties.xml" context="ABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Development Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//aiacfg:Property[contains(@name,'Default.SystemID')]"/>
+      </Assertion>
+      <Assertion name="BPELThrowActivityNamingCheck" description="All Throw activities in a BPEL process should follow the Pattern: Throw{fault name}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Throw){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:throw/@name"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPABCSCheck1" description="This check is for all ABCSImpl that follow Async Delayed Response MEP. Process level configurations are required to ensure the instance rollback and bypassing the dehydration store. Set configurations level property 'transaction' to 'participate' in bpel.xml" fileType="bpel.xml" context="ABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//configurations/property/@name[contains(.,'transaction')]/parent::property[contains(.,'participate')]"/>
+      </Assertion>
+      <Assertion name="BPELSwitchActivityNamingCheck" description="All Switch activities in a BPEL process should follow the Pattern: Switch{Name of what is being evaluated}" fileType="*.bpel" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(Switch){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:switch/@name"/>
+      </Assertion>
+      <Assertion name="ABMToEBMViceVersaCustomXSLExistsCheck" description="Every XSL that transforms an ABM to EBM or vice versa has to have a corresponding custom XSL for extension enablement. E.g., if someEBM_to_someABM.xsl exists in an ABCS then there has to be a someEBM_to_someABM_Custom.xsl in the same ABCS BPEL project and it has to be imported by the main XSL. Note that this assertion relies on JDev generated processing instruction 'oracle-xsl-mapper'. It looks for 'EBM' in either source or target so that only ABM-EBM and vice versa transformations are picked up. If this PI is not present in the xsl then even though the xsl is not ABM-EBM or EBM-ABM it might be picked up." fileType="*" context="ABCSImpl" priority="2" executor="FSExecutor" operation="correspondingFilesMatchPatternCheck" category="AIA - Architecture Standards">
+         <Param name="working.directory" default="currentDirectory"/>
+         <Param name="filename.match.regxpattern" default="InputFilePattern_(c|C)ustom.xsl"/>
+         <Param name="filecontent.exclude.regxpattern" default=".*(c|C)ustom.xsl"/>
+         <Param name="filename.search.regxpattern" default="[a-zA-Z_0-9_]*(EBM)*[a-zA-Z_0-9_]*.xsl"/>
+         <Param name="file.filter.regxpattern" default="{PI:EBM}"/>
+         <Param name="filename.exclude.regxpattern" default="([a-zA-Z_0-9]*((Fault|fault|header|Header|SenderSystemID|TargetSystemID)[a-zA-Z_0-9]*)|([a-zA-Z_0-9]*(C|c)ustom)|([a-zA-Z_0-9]*(T|t)emplate)).xsl"/>
+      </Assertion>
+      <Assertion name="InvokeSecurityServiceInReqABCSImplCheck" description="Every participating application in a PIP should have a corresponding security service with 2 operations to transform from AppContext to AppNeutralContext and vice versa. Requester ABCS Impl should have a partnerLink defined and a invoke activity to invoke security service with operation TransformToAppNeutralContext. Note::partnerlink name should follow the naming standards Pattern:TransformAppContext{appShortName}Service " fileType="*.bpel" context="ReqABCSImpl" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:invoke[contains(@partnerLink,'TransformAppContext')]|//bpel:invoke[contains(@operation,'TransformToAppNeutralContext')]"/>
+      </Assertion>
+      <Assertion name="MinExtPointsInSyncMEPCheck" description="All BPEL processes which follow SYNC Request Response pattern should have minimum of 4 extension points" fileType="*.bpel" context="ABCSImpl,{MEP:SYNC_REQ_RESPONSE}" priority="2" executor="XPathExecutor" operation="xpathNodeCountGreaterThanCheck" category="AIA - Extensibility Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${syncMinExtension}" default="3"/>
+         <Param name="xpath.search" default="//bpel:invoke[(contains(@portType,'Extension') or contains(@portType,'Ext')) and (contains(@partnerLink,'Extension') or contains(@partnerLink,'Ext'))]"/>
+      </Assertion>
+      <Assertion name="EBFTargetNameSpacesCheck" description="All targetNameSpaces for EBF processes should follow the standard pattern defined in AIA Naming Standards guide :: 'http://xmlns.oracle.com/EnterpriseFlows/(Core|(Industry/IndustryName))/ServiceName/version(optional)'" fileType="[a-zA-Z_0-9]*(EBF)((/V)[0-9]*)??.wsdl" context="EBF" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="(http://xmlns.oracle.com/EnterpriseFlows)(/)(Core|(Industry/${profile:IndustryName}))?{1}/[a-zA-Z_0-9_/]*((/V)[0-9])??"/>
+         <Param name="xpath.search" default="/wsdl:definitions/@*[contains(local-name(.),'targetNamespace')]"/>
+      </Assertion>
+      <Assertion name="EBSPLinkWSDLRuntimeLocationCheck" description="ABCS partner link to EBS, it should have two properties wsdlLocation and wsdlRuntimeLocation. This assertion is for wsdlRuntimeLocation should point to the abstract EBS wsdl located in the AIAcoponents folder." fileType="bpel.xml" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathValueCorrespondingXpathExistCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property[@name='wsdlRuntimeLocation' and starts-with(text(),'http://') and contains(text(),'#SUBVALUE#')]"/>
+         <Param name="xpath.substitute.value.xpath" default="//partnerLinkBinding[contains(@name,'EBS')]/@name"/>
+      </Assertion>
+      <Assertion name="AddTargetSystemIDFileExistsInProvCheck" description="Provider ABCS Impl Project should contain AddTargetSystemID.xsl for setting targetSystemId. This transformation takes care of setting the /EBMHeader/Target/ID in the EBMHeader. This is to ensure that Provider ABC services do not assume that the target system id has been populated in EBM header. This XSL checks if targetSystemID is already populated. If so it copies the ID. Otherwise it derives it from the AIAConfigurations file." fileType="*" context="ProvABCSImpl" priority="2" executor="FSExecutor" operation="fileExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="AddTargetSystemID.xsl"/>
+      </Assertion>
+      <Assertion name="NoLocalEBSPLinkWSDLCheck" description="Wsdl file for ABCS partner link to EBS should be located in AIAComponent folder. It should not be local." fileType="[a-zA-Z_0-9_]*(EBS)((V)[0-9]*)??Ref.wsdl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="/wsdl:definitions/wsdl:import[starts-with(@location,'http://') and contains(@location,'AIAComponents')]"/>
+      </Assertion>
+      <Assertion name="CAVSRoutingForEveryOperationsInEBSCheck" description="Every operation defined in EBS Service should have a corresponding CAVS routing rule defined." fileType="[a-zA-Z_0-9]*(EBS)[a-zA-Z_0-9]*.esbsvc" context="EBS" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xpath.namespace.prefixes" value=""/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//operationInfo[child::routingRules]/routingRules[not(routingRule/targetOperation/@qname[contains(.,'AIASystem.ValidationSystem')])]/routingRule/targetOperation/@qname"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationCheck4" description="This is to ensure EBM Header is fully populated in the Requester ABCSImpl. This check is to ensure EBMTracking should contain all the elements in the ReqABM_to_EBM xsl. Elements not found will be reported in violations. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathListExistCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.4.search" default="//corecom:ActivityDateTime"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.2.search" default="//corecom:ExecutionUnitName"/>
+         <Param name="xpath.1.search" default="//corecom:SequenceNumber"/>
+         <Param name="local.metadir" default="AIAComponents"/>
+         <Param name="xpath.3.search" default="//corecom:ImplementationCode"/>
+         <Param name="xpath.0.search" default="//corecom:EBMTracking"/>
+      </Assertion>
+      <Assertion name="BPELJavaEmbeddingActivityNamingCheck" description="All Java Embedding activities in a BPEL process should follow the pattern Pattern: {A name describing the functionality}" fileType="*.bpel" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="^((?!Java_Embedding)[a-zA-Z_0-9])*$"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpelx:exec/@name"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationCheck3" description="This is to ensure EBM Header is fully populated in the Requester ABCSImpl. This check is to ensure BusinessScope should contain all the elements in the ReqABM_to_EBM xsl. Elements not found will be reported in violations. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathListExistCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.4.search" default="//corecom:EnterpriseServiceName"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.2.search" default="//corecom:InstanceID"/>
+         <Param name="xpath.1.search" default="//corecom:BusinessScope/corecom:ID"/>
+         <Param name="local.metadir" default="AIAComponents"/>
+         <Param name="xpath.5.search" default="//corecom:EnterpriseServiceOperationName"/>
+         <Param name="xpath.3.search" default="//corecom:BusinessScopeTypeCode"/>
+         <Param name="xpath.0.search" default="//corecom:BusinessScope"/>
+      </Assertion>
+      <Assertion name="GenerateScriptInputXmlNoIndustryDvms" description="GenerateScriptInput.xml file should not reference any DVMs under the Industry source control folder. All DVMs should be stored in the Core source control folder." fileType="GenerateScriptInput.xml" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//DVMName[text() and (contains(@SourceFilePath,'/Industry/') or contains(@SourceFilePath,'\Industry\'))]/text()"/>
+      </Assertion>
+      <Assertion name="CatchBlkReqABCSAllMEPNonPLCheck" description="This is to ensure Error Handling guidelines are followed in all the ReqABCS processes. This checks the catch blocks in ReqABCS bpel for all the non-partnerlink errors. Exclusions are system faults (partnerlink errors such as binding and remote faults), fault from extension process, fault from EBS in case of SYNC REQ_RESP, ABCS fault in case of ASYNC REQ_RESP. Following activities should exist according to guidelines. 1:invoke - Invoke AIAAsyncErrorHandlingBPELProcess should be invoked for all non-partnerlink faults except the ones mentioned above. NOTE: AIAFault from EBS in case of SYNC REQ_RESP should have 'ebs' in namespace prefix and AIAFault raised after examining fault string from ResponseEBM in ASYNC_REQ_RESP should have 'abcs' in namespace prefix. AIAFault from extension service should have 'ext' in the namespace prefix. NOTE: Invoke activity can be substituted by java embedding activity also. There should be a invocation of oracle.apps.aia.core.eh.IAIAErrorHandler.sendNotification() method. Compliance Inspector would report these catch blocks as failures if namespace prefix does not contain the values. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ReqABCSImpl" priority="2" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:AllMEP/bpel:Fault/bpel:InvokeErrHandler/bpel:ABCS/bpel:P2"/>
+         <Param name="xpath.any.exists" default="true"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[not((contains(@faultName,'remote') or contains(@faultName,'binding')) or (contains(@faultName,'ebs') or contains(@faultName,'abcs')) or contains(@faultName,'ext'))] | //bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="WSDLDocumentationInABCSImplCheck" description="ABCS WSDL should be documented as per AIA Documentation standards. Please refer to Integration Developer Guide for annotation standards. All the documentation elements need to be present" fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl" context="ABCSImpl" priority="3" executor="XMLUnitExecutor" operation="compareNodeWithRegExXMLCheck" category="AIA - Documentation Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.external.search.xpath" value="//ABCSwsdlDoc/wsdl:documentation"/>
+         <Param name="xpath.search" default="//wsdl:definitions/wsdl:documentation"/>
+      </Assertion>
+      <Assertion name="XSLNoEmptyElementsOutputCheck" description="Empty elements should not be outputted.  Use xsl:if construct to ensure an element is not output if its source element is missing or empty." fileType="*.xsl" context="ABCSImpl" priority="4" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="/xsl:stylesheet[(count(//xsl:if[not(ancestor::corecom:EBMHeader)]) div count(//xsl:value-of[not(ancestor::corecom:EBMHeader)])) > .5]/*[1]"/>
+      </Assertion>
+      <Assertion name="PortTypeNotExistInRefWSDLCheck" description="Reference WSDLs {PartnerLink Ref WSDL's}in a BPEL process cannot have portTypes defined." fileType="[a-zA-Z_0-9]*(R|r)ef.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//wsdl:portType/@name"/>
+      </Assertion>
+      <Assertion name="EBSPLinkWSDLLocationCheck" description="ABCS partner link to EBS, it should have two properties wsdlLocation and wsdlRuntimeLocation. This assertion is for wsdl file name should be, partner link name followed by Ref.wsdl e.g: if partner link name is SampleEBS then wsdlName should be SampleEBSRef.wsdl." fileType="bpel.xml" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathValueCorrespondingXpathExistCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property[@name='wsdlLocation' and text()=concat('#SUBVALUE#','Ref.wsdl')]"/>
+         <Param name="xpath.substitute.value.xpath" default="//partnerLinkBinding[contains(@name,'EBS')]/@name"/>
+      </Assertion>
+      <Assertion name="CatchBlkReqABCSSyncCheck" description="This is to ensure Error Handling guidelines are followed in all the Requester ABCS processes. This checks the catch blocks in SYNC REQ_RESP ReqABCS bpel for all the errors. Following activities should exist according to guidelines. 1:Reply -Reply to the partnerlink which initiated the process(same port and operation) with 'fault'. NOTE: Reply activity portType should contain string 'ReqABCSImpl'. " fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ReqABCSImpl,{MEP:SYNC_REQ_RESPONSE}" priority="2" executor="XMLUnitExecutor" operation="existsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:SyncMEP/bpel:Fault/bpel:ReqABCS/bpel:P2"/>
+         <Param name="xpath.search" default="/bpel:process/bpel:faultHandlers/bpel:catch | /bpel:process/bpel:faultHandlers/bpel:catchAll"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="XACMLMessageToEBMHeaderInReqABCSCheck" description="In Req ABCS Impl once the Security Service for the Requester application is invoked, there should be assign activity that copies the XACML request from the security service response to EBM header. This Assign activity should exist within the same scope. Note::partnerlink name should follow the naming standards Pattern:TransformAppContext{appShortName}Service " fileType="*.bpel" context="ReqABCSImpl" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Security Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:assign/bpel:copy[contains(bpel:from/@query,'Request') and contains(bpel:to/@query,'EBMHeader') and contains(bpel:to/@query,'Request')]/parent::*/@name"/>
+      </Assertion>
+      <Assertion name="FaultPolicyEnabledforABCSAndEBFCheck" description="Property faultPolicy need to be set in bpel.xml of every ABCS and EBF project with process level fault policy file name." fileType="bpel.xml" context="ABCSImpl,EBF" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" default="wsdl=&quot;http://schemas.xmlsoap.org/wsdl/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+         <Param name="xpath.search" default="//faultPolicyBindings/process/@faultPolicy"/>
+      </Assertion>
+      <Assertion name="preferredPortProperyExistForEBSPlinkCheck" description="Property preferredPort should identify the esb port name from the deployed EBS wsdl on the soa server. Any EBS partnerlink should contain the preferedPort property set in bpel.xml" fileType="bpel.xml" context="ABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" default=""/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property[contains(@name,'preferredPort')]"/>
+      </Assertion>
+      <Assertion name="EBMHeaderPopulationCheck" description="This is to ensure EBM Header is fully populated in the Requester ABCSImpl. This check is to ensure basic elements are populated fully in ReqABM_to_EBM xsl. Following elements need to be populated: EBMID,EBMName,EBOName,VerbCode. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*EBM.xsl" context="ReqABCSImpl" priority="2" executor="XPathExecutor" operation="xpathListExistCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xml.local.imports.resovable" default="true"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.4.search" default="//corecom:CreationDateTime"/>
+         <Param name="xml.remote.imports.resovable" default="true"/>
+         <Param name="xpath.2.search" default="//corecom:EBMName"/>
+         <Param name="xpath.1.search" default="//corecom:EBMID"/>
+         <Param name="local.metadir" default="AIAComponents"/>
+         <Param name="xpath.5.search" default="//corecom:VerbCode"/>
+         <Param name="xpath.3.search" default="//corecom:EBOName"/>
+         <Param name="xpath.0.search" default="//corecom:EBMHeader"/>
+      </Assertion>
+      <Assertion name="NoLocalWSDLImportsInWSDLOfABCSorEBFCheck" description="No local WSDL should be Imported In process WSDL of ABCS or EBF." fileType="[a-zA-Z_0-9]*(ABCSImpl|EBF)((/V)[0-9]*)??.wsdl" context="ABCSImpl,EBF" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="((ftp|http|https)(://)[a-zA-Z_0-9./:\-$%?\{\}]*)|([a-zA-Z_0-9]*(P|p)roperties.wsdl)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//wsdl:import/@location"/>
+      </Assertion>
+      <Assertion name="BPELCompensateActivityNamingCheck" description="All Compensate activities in a BPEL process should start with a prefix of Compensate followed by activity name. Pattern: Compensate{scope name}." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Naming Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(Compensate){1}(([a-zA-Z])([a-zA-Z_0-9])*)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//bpel:compensate/@name[contains(.,../@scope)]"/>
+      </Assertion>
+      <Assertion name="AddTargetSystemIDCallExistsInProvCheck" description="Provider ABCS Impl Project should contain AddTargetSystemID.xsl for setting targetSystemId. BPEL should contain an assign activity that invokes this transformation and assigns it to the EBM. This transformation takes care of setting the /EBMHeader/Target/ID in the EBMHeader. This is to ensure that Provider ABC services do not assume that the target system id has been populated in EBM header. This XSL checks if targetSystemID is already populated. If so it copies the ID. Otherwise it derives it from the AIAConfigurations file." fileType="*.bpel" context="ProvABCSImpl" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//bpel:assign[contains(bpel:copy/bpel:from/@expression,'AddTargetSystemID.xsl')]/@name"/>
+      </Assertion>
+      <Assertion name="CatchBlkReqABCSAllMEPNonPLCheck1" description="This is to ensure Error Handling guidelines are followed in all the Requester ABCS processes. This checks the catch blocks in ReqABCS bpel for all the partnerlink errors. Included in check are fault from extension process, fault from EBS in case of SYNC REQ_RESP, ABCS fault in case of ASYNC REQ_RESP. Following activities should not exist according to guidelines. 1:invoke - Invoke AIAAsyncErrorHandlingBPELProcess should not exist for all catch blocks mentioned above. It is recommended that these faults be handled using fault policies. If the condition already exists in fault policies then it may result in multiple notifications. NOTE: AIAFault from EBS in case of SYNC REQ_RESP should have 'ebs' in namespace prefix and AIAFault raised after examining fault string from ResponseEBM in ASYNC_REQ_RESP should have 'abcs' in namespace prefix. AIAFault from extension service should have 'ext' in the namespace prefix. Compliance Inspector would report these catch blocks as failures if namespace prefix does not contain the values. NOTE: Invoke activity can be substituted by java embedding activity also. There should be a invocation of oracle.apps.aia.core.eh.IAIAErrorHandler.sendNotification() method. For additional information refer to Integration Developer Guide." fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9]*)??.bpel" context="ReqABCSImpl" priority="2" executor="XMLUnitExecutor" operation="notExistsRegExXMLCheck" category="AIA - Error Handling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.node.match.mode" default="2"/>
+         <Param name="xml.external.search.xpath" value="//AIAErrorHandlingStandards/bpel:MantatoryActivities/bpel:AllMEP/bpel:Fault/bpel:InvokeErrHandler/bpel:ABCS/bpel:P2"/>
+         <Param name="xpath.any.exists" default="true"/>
+         <Param name="xpath.search" default="//bpel:process/bpel:faultHandlers/bpel:catch[(contains(@faultName,'remote') or contains(@faultName,'binding')) or contains(@faultName,'ebs') or contains(@faultName,'ext')]"/>
+         <Param name="xpath.error.path" default="@faultName"/>
+      </Assertion>
+      <Assertion name="TXNEnableInAsyncDelRespMEPProvCheck1" description="This check is for all Provider ABCSImpl that follow Async Delayed Response MEP. partnerLinkBinding that invokes the EBS should contain a property 'transaction' and it should be set to 'participate'. This is required for bringing all processes in a integration scenario under one transaction. Note: partnerLinkBinding name should contain 'EBS'." fileType="bpel.xml" context="ProvABCSImpl,{MEP:ASYNC_REQ_RESPONSE}" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property/@name[contains(.,'transaction')]/parent::property[contains(.,'participate')]"/>
+      </Assertion>
+      <Assertion name="wsdlLocationPropertyExistForPlinkCheck" description="Property wsdlLocation should identify the esb port name from the deployed EBS wsdl on the soa server. Any EBS partnerlink should contain the wsdlLocation property set in bpel.xml" fileType="bpel.xml" context="ReqABCSImpl,EBF" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="AIA - Architecture Standards">
+         <Param name="xpath.namespace.prefixes" default=""/>
+         <Param name="xpath.match.regxpattern" default="[a-zA-Z_0-9]*Ref.wsdl"/>
+         <Param name="xpath.search" default="//partnerLinkBinding[contains(@name,'EBS')]/property[contains(@name,'wsdlLocation')]"/>
+      </Assertion>
+      <Assertion name="CAVSRoutingFilterExprInEBSCheck" description="All the EBS Services should have a routing rule defined for CAVS. The filter expression should be based on corecom:EBMHeader/corecom:MessageProcessingInstruction/corecom:EnvironmentCode='CAVS'. Also SetCAVSEndpoint.xsl should be used for transformation to set CAVS endpoint in ESBHeader." fileType="[a-zA-Z_0-9]*(EBS)[a-zA-Z_0-9]*.esbsvc" context="EBS" priority="2" executor="XMLUnitExecutor" operation="compareNodeWithRegExXMLCheck" category="AIA - CAVS Enablement Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.external.filename" value="${faultXML}" default="AIAStdCode.2.x.xml"/>
+         <Param name="xml.external.search.xpath" value="//CavsRouting/routingRule/filterExpression"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="/service/operations/operationInfo/routingRules/routingRule[contains(targetOperation/@serviceQName,'AIASystem.ValidationSystem.AsyncRequestRecipient')]/filterExpression|/service/operations/operationInfo/routingRules/routingRule[contains(targetOperation/@serviceQName,'AIASystem.ValidationSystem.SyncResponseSimulator')]/filterExpression"/>
+      </Assertion>
+      <Assertion name="NoLocalSchemasInEBSCheck" description="EBS Project should not contain any schema(.xsd) files." fileType="*" context="EBS" priority="2" executor="FSExecutor" operation="fileNotExistCheck" category="AIA - Architecture Standards">
+         <Param name="filename.search.regxpattern" default="*.xsd"/>
+      </Assertion>
+      <Assertion name="ServiceXmlNoIndustryDvms" description="Service.xml file should not reference any DVMs under the Industry source control folder. All DVMs should be stored in the Core source control folder." fileType="[a-zA-Z_0-9_]*Service.xml" priority="2" executor="XPathExecutor" operation="xpathNotExistsCheck" category="AIA - MetaFile validation">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.search" default="//DVMName[text() and (contains(@SourceFilePath,'/Industry/') or contains(@SourceFilePath,'\Industry\'))]/text()"/>
+      </Assertion>
+   </AssertionSet>
+</AssertionSets>

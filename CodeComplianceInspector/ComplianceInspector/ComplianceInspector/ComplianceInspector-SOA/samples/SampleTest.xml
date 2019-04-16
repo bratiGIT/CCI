@@ -1,0 +1,37 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<project default="qatest">
+  <taskdef resource="checkComplianceAnt.properties"
+           classpath="D:\DailyBuild\BuildOut\Infrastructure\CodeComplianceInspector\lib\compliance.policy.engine.jar"/>
+  <taskdef resource="XMLAnalyzerAnt.properties"
+           classpath="D:\DailyBuild\BuildOut\Infrastructure\CodeComplianceInspector\lib\XMLCompare.jar"/>
+  <target name="qatest">
+    <checkCompliance inputdir="D:\Samples\testdata\unit1\gold\input\Ebiz"
+			 outputdir="D:\Samples\tooloutput\unit1\output"
+			 testname="BPEL_AssignActivityCheck"
+             />
+    
+	<xmlcompare controlfile="D:\Samples\testdata\unit1\gold\output\Ebiz\Ebiz_Audit.xml"
+                 testfile="D:\Samples\tooloutput\unit1\output\Ebiz\Ebiz_Audit.xml"
+                 outputxml="D:\Samples\QATestOutput.xml"
+                 command="compareRegExXML" 
+                 append="true"
+                 description="BPEL_AssignActivityCheck"
+                 />
+	
+
+    <checkCompliance inputdir="D:\Samples\testdata\unit2\gold\input\Ebiz"
+             outputdir="D:\Samples\tooloutput\unit2\output"
+			 testname="NoLocalSchemasInABCS"
+             />
+    <xmlcompare controlfile="D:\Samples\testdata\unit2\gold\output\Ebiz\Ebiz_Audit.xml"
+                 testfile="D:\Samples\tooloutput\unit2\output\Ebiz\Ebiz_Audit.xml"
+                 outputxml="D:\Samples\QATestOutput.xml"
+                 command="optionalCompareRegExXML" 
+				 append="true"
+				 description="NoLocalSchemaTestStatus"
+
+				 />
+
+  </target>
+
+</project>

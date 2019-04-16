@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="windows-1252" ?>
+<Validator xmlns="http://www.oracle.com/aia/PIPvalidator" default="MyTestSuite">
+
+
+<!-- ADD, update or remove tests in the existing test suite -->
+ <TestSuite name="BPELProcessActivityNamingStandardsSuite" >
+       
+<!-- (case:Update) If you want to modify a test you can pass modified parameter from the test, no need to have custom rules file. 
+If you want to only modify a rule definition, you can place it in the custom rules file, no need to have custom test suite file. 
+If you want to have both, you can have a test passing modified parameter and a rule executing, for example, a different, 
+than in the original rule definition, assertCondition as one can see from the below example.--> 
+	
+	<Test rulename="BPELAssignActivityNamingCheck">
+            <Property name='naming' value='(Assign_)[0-9]*'/>
+	</Test>
+
+<!-- (case:Remove) Disabling this test by putting active=false, no need to have Custom_Rules.xml. --> 
+
+     <Test  rulename="BPELCompensateActivityNamingCheck" active="false"/>
+ </TestSuite>
+
+<!--
+For adding a new test suite place its name in the default attribute of the Validator node. 
+NOTE:: To run this new test suite alone please use -testSuite switch while running PIPAuditor. 
+For more information on the switches, please, refer to DeveloperTools source document.
+-->
+
+ <TestSuite name="MyTestSuite">
+<!-- This is a new test suite that contains new test. Corresponding rule for this new test should go into the custom rule file. -->
+<!-- (case:Add) Add new test to a new test suite -->
+
+	<Test rulename="WSDLDocumentationCheck"/>
+</TestSuite> 
+ 
+</Validator>

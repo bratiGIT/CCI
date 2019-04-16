@@ -1,0 +1,290 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Validator default="all" time="July 27 2010 11:50:59AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor">
+<Policy name="all" >
+		 <depends policyName="AIA"/>
+		 <depends policyName="WSI"/>
+</Policy>
+<Policy name="AIA" >
+		 <depends policyName="AIA-Architecture Standards"/>
+		 <depends policyName="AIA-CAVS Enablement Standards"/>
+		 <depends policyName="AIA-Design Pattern Standards"/>
+		 <depends policyName="AIA-Development Standards"/>
+		 <depends policyName="AIA-Documentation Standards"/>
+		 <depends policyName="AIA-Error Handling Standards"/>
+		 <depends policyName="AIA-Extensibility Standards"/>
+		 <depends policyName="AIA-Meta Data Validation"/>
+		 <depends policyName="AIA-Naming Standards"/>
+		 <depends policyName="AIA-Performance Standards"/>
+		 <depends policyName="AIA-Security Standards"/>
+</Policy>
+<Policy name="WSI" >
+		<depends policyName="WS-I BP Standards"/>
+</Policy>
+
+<Policy name="AIA-Architecture Standards" >
+	<Assertion name="NoLocalEBSPLinkWSDLCheck" />
+	<Assertion name="TXNEnableInAsyncFFMEPABCSCheck" />
+	<Assertion name="NoLocalWSDLInEBSCheck" />
+	<Assertion name="WSDLFromCentralLocationInEBSCheck" />
+	<Assertion name="EBMToFaultXSLFileExistsInProvCheck" />
+	<Assertion name="NoLocalPartnerLinkWSDLInEBFCheck" />
+	<Assertion name="NoLocalSchemasInEBFCheck" />
+	<Assertion name="NoLocalSchemaImportsInWSDLOfABCSCheck" />
+	<Assertion name="NoLocalSchemaImportsInWSDLOfEBFCheck" />
+	<Assertion name="NoTargetSysIdHardWiringInXREFLookupCheck" />
+	<Assertion name="EBMIDUsedForCorrelation" />
+	<Assertion name="EBMHeaderVariableInABCSCheck" />
+	<Assertion name="NoLocalSchemasInABCSCheck" />
+	<Assertion name="NoTargetSysHardWiringInPopulateXrefCheck" />
+	<Assertion name="ABCSDoesNotPopulateTargetCheck" />
+	<Assertion name="RunTimeFaultWSDLimportInABCSImplCheck" />
+	<Assertion name="EBMHeaderVariableAssignedCheck" />
+	<Assertion name="DynamicPlinkEnablementCheck" />
+	<Assertion name="NoTargetSysIdHardWiringInDVMLookupCheck" />
+	<Assertion name="ExtensionStandardPatternCheck" />
+	<Assertion name="OperationsNotExistInRefWSDLCheck" />
+	<Assertion name="TXNEnableInAsyncFFMEPReqCheck1" />
+	<Assertion name="CorrelationUsedWithReceiveforAsync" />
+	<Assertion name="MessageTypeNotExistInRefWSDLCheck" />
+	<Assertion name="CorrelationUsedWithInvokeforAsync" />
+	<Assertion name="NoLocalPartnerLinkWSDLInABCSCheck" />
+	<Assertion name="CorrelationSetsDefinedforAsyncReqABCS" />
+	<Assertion name="wsdlRuntimeLocationExistForPlinkInABCSCheck" />
+	<Assertion name="wsdlRuntimeLocationExistForPlinkInEBFCheck" />
+	<Assertion name="ABMToEBMViceVersaCustomXSLExistsCheck" />
+	<Assertion name="AddTargetSystemIDFileExistsInProvCheck" />
+	<Assertion name="XSLNoEmptyElementsOutputCheck" />
+	<Assertion name="PortTypeNotExistInRefWSDLCheck" />
+	<Assertion name="NoLocalWSDLImportsInWSDLOfABCSCheck" />
+	<Assertion name="NoLocalWSDLImportsInWSDLOfEBFCheck" />
+	<Assertion name="AddTargetSystemIDCallExistsInProvCheck" />
+	<Assertion name="wsdlLocationPropertyExistForPlinkInABCSCheck" />
+	<Assertion name="wsdlLocationPropertyExistForPlinkInEBFCheck" />
+	<Assertion name="NoLocalSchemasInEBSCheck" />
+	<Assertion name="TXNEnableInAsyncDRABCSCheck" />
+	<Assertion name="TXNEnableInASyncDelayedProvABCSCheck" />
+	<Assertion name="TXNEnableInASyncDelayedProvABCSCheck1" />
+	<Assertion name="TXNEnableInFireForgetProvABCSCheck" />
+	<Assertion name="TXNEnableInFireForgetProvABCSCheck1" />
+	<Assertion name="DVMLocationInDVMLookupCheck" />
+	<Assertion name="XREFLocationInXREFLookupCheck" />
+	<Assertion name="XREFLocationInXREFPopulateXRefCheck" />
+	<Assertion name="XSLLocationInXFormCheck" />
+	<Assertion name="JMSConsumerJMSMESSIDStampingCheck" />
+	<Assertion name="ResequencerGroupIDStampingCheck" />
+	<Assertion name="TokenizedReferencesInCompositeCheck" />
+	<Assertion name="TokenizedReferencesInWSDLCheck" />
+	<Assertion name="TokenizedReferencesInXSLCheck" />
+	<Assertion name="TokenizedReferencesInBpelCheck" />
+
+</Policy>
+
+<Policy name="AIA-CAVS Enablement Standards" >
+	<Assertion name="CAVSRoutingForEveryOperationsInMediatorCheck" />
+	<Assertion name="EBMHeaderPopulationCheck1" />
+	<Assertion name="EBMHeaderPopulationCheck2" />
+	<Assertion name="EBMHeaderPopulationMessageProcInsCheck" />
+	<Assertion name="EBMHeaderPopulationWSACheck" />
+	<Assertion name="EBMHeaderPopulationCheck4" />
+	<Assertion name="EBMHeaderPopulationCheck3" />
+	<Assertion name="EBMHeaderPopulationCheck" />
+
+</Policy>
+
+<Policy name="AIA-Design Pattern Standards" >
+	<Assertion name="ABCSNoEBFPartnerLinkCheck" />
+	<Assertion name="ABCSNoEBFReferenceInCompositeCheck" />
+	<Assertion name="ABCSNoEBFReferenceInComponentCheck" />
+	<Assertion name="EBFNoABCSPartnerLinkCheck" />
+	<Assertion name="EBFNoABCSReferenceInCompositeCheck" />
+	<Assertion name="EBFNoABCSReferenceInComponentCheck" />
+	<Assertion name="EBSRoutingServiceInCompositeCheck" />
+	<Assertion name="EBSRoutingServiceInComponentCheck" />
+	<Assertion name="ABCSInvocationEBSCountCheck" />
+	<Assertion name="ABCSEBOUsageCountCheck" />
+
+</Policy>
+
+<Policy name="AIA-Development Standards" >
+	<Assertion name="AIAServiceConfigFileForABCSExistsCheck" />
+	<Assertion name="AIAServiceConfigFileForEBFExistsCheck" />
+	<Assertion name="AIAConfigEntryDefaultSystemIdDefinedCheck" />
+
+</Policy>
+
+<Policy name="AIA-Documentation Standards" >
+	<Assertion name="PortTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="OperationTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="MessageTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="WSDLDocumentationInABCSImplCheck" />
+	<Assertion name="ReqABCSReferenceElementCommentCheck" />
+	<Assertion name="ReqABCSServiceElementCommentCheck" />
+	<Assertion name="ReqABCSServiceElementAnnotationCheck" />
+	<Assertion name="ReqABCSServiceAnnotationValuesCheck" />
+	<Assertion name="ReqABCSReferenceElementAnnotationCheck" />
+	<Assertion name="ProvABCSReferenceElementCommentCheck" />
+	<Assertion name="ProvABCSServiceElementCommentCheck" />
+	<Assertion name="ProvABCSServiceElementAnnotationCheck" />
+	<Assertion name="ProvABCSServiceAnnotationValuesCheck" />
+	<Assertion name="ProvABCSReferenceElementAnnotationCheck" />
+	<Assertion name="EBFReferenceElementCommentCheck" />
+	<Assertion name="EBFServiceElementCommentCheck" />
+	<Assertion name="EBFServiceElementAnnotationCheck" />
+	<Assertion name="EBFServiceAnnotationValuesCheck" />
+	<Assertion name="EBFReferenceElementAnnotationCheck" />
+	<Assertion name="EBFReferenceEBSAnnotationValuesCheck" />
+	<Assertion name="CBPReferenceElementCommentCheck" />
+	<Assertion name="CBPServiceElementCommentCheck" />
+	<Assertion name="CBPServiceElementAnnotationCheck" />
+	<Assertion name="CBPServiceAnnotationValuesCheck" />
+	<Assertion name="CBPReferenceElementAnnotationCheck" />
+	<Assertion name="TransportAdapterServiceElementCommentCheck" />
+	<Assertion name="TransportAdapterReferenceElementCommentCheck" />
+	<Assertion name="JMSProducerRefTransElementAnnotationCheck" />
+	<Assertion name="JMSProducerSerImplAnnotationValuesCheck" />
+	<Assertion name="JMSProducerRefTransAnnotationValuesCheck" />
+	<Assertion name="JMSProducerReferenceElementAnnotationCheck" />
+	<Assertion name="JMSConsumerSerTransElementAnnotationCheck" />
+	<Assertion name="JMSConsumerSerImplAnnotationValuesCheck" />
+	<Assertion name="JMSConsumerSerTransAnnotationValuesCheck" />
+	<Assertion name="JMSConsumerReferenceElementAnnotationCheck" />
+	<Assertion name="DBAdapterSerImplAnnotationValuesCheck" />
+	<Assertion name="DBAdapterReferenceElementAnnotationCheck" />
+	<Assertion name="AQProducerRefTransElementAnnotationCheck" />
+	<Assertion name="AQProducerSerImplAnnotationValuesCheck" />
+	<Assertion name="AQProducerRefTransAnnotationValuesCheck" />
+	<Assertion name="AQProducerReferenceElementAnnotationCheck" />
+	<Assertion name="AQConsumerSerTransElementAnnotationCheck" />
+	<Assertion name="AQConsumerSerImplAnnotationValuesCheck" />
+	<Assertion name="AQConsumerSerTransAnnotationValuesCheck" />
+	<Assertion name="AQConsumerReferenceElementAnnotationCheck" />
+	<Assertion name="FILEReaderSerImplAnnotationValuesCheck" />
+	<Assertion name="FILEReaderSerTransAnnotationValuesCheck" />
+	<Assertion name="FILEReaderReferenceElementAnnotationCheck" />
+	<Assertion name="FILEWriterSerImplAnnotationValuesCheck" />
+	<Assertion name="FILEWriterRefTransAnnotationValuesCheck" />
+	<Assertion name="FILEWriterReferenceElementAnnotationCheck" />
+
+</Policy>
+
+<Policy name="AIA-Error Handling Standards" >
+	<Assertion name="CatchBlkProvABCSAllMEPNonPLCheck1" />
+	<Assertion name="CatchBlkProvABCSSyncCheck" />
+	<Assertion name="CatchBlockRemoteFaultExistInBPELCheck" />
+	<Assertion name="CatchBlkProvABCSAllMEPNonPLCheck" />
+	<Assertion name="CatchBlkProvABCSASyncRespCheck" />
+	<Assertion name="CatchBlockBindingFaultExistInBPELCheck" />
+	<Assertion name="CatchBlkABCSAllMEPCheck" />
+	<Assertion name="CatchBlkReqABCSAllMEPNonPLCheck" />
+	<Assertion name="CatchBlkReqABCSSyncCheck" />
+	<Assertion name="FaultPolicyEnabledforABCSCheck" />
+	<Assertion name="FaultPolicyEnabledforEBFCheck" />
+	<Assertion name="CatchBlkReqABCSAllMEPNonPLCheck1" />
+
+</Policy>
+
+<Policy name="AIA-Extensibility Standards" >
+	<Assertion name="MaxExtPointsInSyncMEPCheck" />
+	<Assertion name="ExtServicePlinkRuntimeLocCheck" />
+	<Assertion name="MinExtPointsInASyncDRespMEPCheck" />
+	<Assertion name="MaxExtPointsInFireAndForgetMEPCheck" />
+	<Assertion name="MaxExtPointsInASyncDRespMEPCheck" />
+	<Assertion name="ExtServiceOperationSyncInABCSCheck" />
+	<Assertion name="ExtServiceOperationSyncInEBFCheck" />
+	<Assertion name="MinExtPointsInFireAndForgetMEPCheck" />
+	<Assertion name="ExtServicePlinkExistForABCSCheck" />
+	<Assertion name="MinExtPointsInSyncMEPCheck" />
+
+</Policy>
+
+<Policy name="AIA-Meta Data Validation" >
+	<Assertion name="ABCSWSDLLocationInCompositeCheck" />
+	<Assertion name="ABCSWSDLLocationInComponentCheck" />
+	<Assertion name="EBFWSDLLocationInCompositeCheck" />
+	<Assertion name="EBFWSDLLocationInComponentCheck" />
+	<Assertion name="CBPWSDLLocationInCompositeCheck" />
+	<Assertion name="CBPWSDLLocationInComponentCheck" />
+	<Assertion name="ABCSExtensionLocationInCompositeCheck" />
+	<Assertion name="ABCSExtensionLocationInComponentCheck" />
+	<Assertion name="EBSWSDLLocationInCompositeCheck" />
+	<Assertion name="EBSWSDLLocationInComponentCheck" />
+	<Assertion name="ABCSABOReferenceLocationCheck" />
+	<Assertion name="ABCSEBOReferenceLocationCheck" />
+	<Assertion name="ABCSEHRefLocationInCompositeCheck" />
+	<Assertion name="ABCSEHRefLocationInComponentCheck" />
+
+</Policy>
+
+<Policy name="AIA-Naming Standards" >
+	<Assertion name="ExtensionStandardPatternCheck2" />
+	<Assertion name="ProvABCSResponseEBSInvokeSwitchCheck" />
+	<Assertion name="EBFResponseEBSInvokeSwitchCheck" />
+	<Assertion name="BPELScopeActivityCheck" />
+	<Assertion name="BPELPickActivityNamingCheck" />
+	<Assertion name="BPELWhileActivityNamingCheck" />
+	<Assertion name="BPELTerminateActivityNamingCheck" />
+	<Assertion name="BPELReplyActivityNamingCheck" />
+	<Assertion name="BPELDecideActivityNamingCheck" />
+	<Assertion name="BPELFlowActivityNamingCheck" />
+	<Assertion name="BPELSequenceActivityNamingCheck" />
+	<Assertion name="ABCSExtWSDLExistsAndNamingCheck" />
+	<Assertion name="ABCSProcessWSDLExistsAndNamingCheck" />
+	<Assertion name="BPELInvokeActivityNamingCheck" />
+	<Assertion name="BPELReceiveActivityCheck" />
+	<Assertion name="BPELAssignActivityNamingCheck" />
+	<Assertion name="ABCSTargetNameSpacesCheck" />
+	<Assertion name="BPELWaitActivityNamingCheck" />
+	<Assertion name="ProcessWSDLNameSpacePrefixesNamingCheck" />
+	<Assertion name="BPELThrowActivityNamingCheck" />
+	<Assertion name="BPELSwitchActivityNamingCheck" />
+	<Assertion name="EBFTargetNameSpacesCheck" />
+	<Assertion name="BPELJavaEmbeddingActivityNamingCheck" />
+	<Assertion name="BPELCompensateActivityNamingCheck" />
+	<Assertion name="ABCSExtTargetNameSpacesCheck" />
+
+</Policy>
+
+<Policy name="AIA-Performance Standards" >
+	<Assertion name="SyncNotInvokeAsyncService" />
+	<Assertion name="SyncNotUseBreakpointActivities" />
+	<Assertion name="DVMCommonColumnUniqueValuesCheck" />
+	<Assertion name="SessionPoolManagerReleaseUsageCheck" />
+
+</Policy>
+
+<Policy name="AIA-Security Standards" >
+	<Assertion name="NoHardWiringUnamePwdInEndpointURIofABCSCheck" />
+	<Assertion name="NoHardWiringUnamePwdInEndpointURIofEBFCheck" />
+	<Assertion name="DynamicPLinkForSecServiceInReqABCSCheck" />
+	<Assertion name="NoUnamePwdInDVMCheck" />
+	<Assertion name="InvokeSecurityServiceInReqABCSImplCheck" />
+	<Assertion name="XACMLMessageToEBMHeaderInReqABCSCheck" />
+
+</Policy>
+
+<Policy name="WS-I BP Standards" >
+	<Assertion name="WSDLDocumentationIsFirstChildCheck" />
+	<Assertion name="UTFEncodingUsedinWSDLCheck" />
+	<Assertion name="UTFEncodingUsedinSchemaCheck" />
+	<Assertion name="XMLversionUsageInWSDLCheck" />
+	<Assertion name="XMLversionUsageInSchemaCheck" />
+	<Assertion name="WSDLImportUsedforWSDLOnlyCheck" />
+	<Assertion name="WSDLImportOnlyPrecededByDocCheck" />
+	<Assertion name="WSDLImportLocationNotEmptyCheck" />
+	<Assertion name="WSDLImportNoRelativeURIInNSCheck" />
+	<Assertion name="WSDLFileRootDefinitionsCheck" />
+	<Assertion name="WSDLTargetNamespaceMatchingCheck" />
+	<Assertion name="WSDLTypesOnlyPrecededByDocAndImportCheck" />
+	<Assertion name="WSDLImportsOnlyInsideDefinitionCheck" />
+	<Assertion name="SchemaNodeOnlyInsideWsdlTypesCheck" />
+	<Assertion name="SchemaImportsOnlyInsideSchemaCheck" />
+	<Assertion name="SchemaImportUsedforXSDOnlyCheck" />
+	<Assertion name="SchemaTargetNamespaceExistCheck" />
+	<Assertion name="SchemaXSDFileRootSchemaCheck" />
+	<Assertion name="SchemaTargetNamespaceMatchingCheck" />
+	<Assertion name="WSDLPartMustNotUseElementAndTypeCheck" />
+	<Assertion name="WSDLOperationMustHaveInputCheck" />
+	<Assertion name="WSDLOperationNameMustBeUniqueCheck" />
+
+</Policy>
+</Validator>

@@ -1,0 +1,57 @@
+<project name="Audit-PIP" default="audit" basedir=".">
+  <target name="auditAll">
+<property file="ant_checkCompliance.properties"/>
+<!--property environment="env" />
+  <property name="env.INPUTDIR" value="${aia.pip.src.dir}"/>
+  <property name="env.REPORT_STAGING_HOME" value="${aia.audit.reports.dir}"/>
+  <property name="env.REPORT_PRODUC_HOME" value="${aia.audit.reports.dir}"/>
+  <property name="env.AIA_DEVTOOL_HOME" value="${fp.code.compliance.home}"/-->
+  <exec dir="${fp.code.compliance.home}/bin" executable="sh">
+       <arg line="aia_checkCompliance.sh ${aia.pip.src.dir} ${aia.audit.reports.dir} ${aia.audit.reports.dir} ${fp.code.compliance.home}"/>
+   </exec>
+  <exec dir="${fp.code.compliance.home}/bin" executable="sh">
+       <arg line="aia_checkCompliance.sh ${inputMetaFile}"/>
+       </exec>
+  </target>
+  
+  <target name="audit" depends="auditpip,auditallpips"/>
+ 
+ <target name="auditallpips" depends="checkPIPCode" unless="isPIP">
+	<echo>
+	  /--------------------------------------------------------\
+		 Started Audit All PIPS
+	  \--------------------------------------------------------/
+	</echo>
+	  <property name="inputDir" value="${aia.pip.src.dir}"/>
+	  <property name="outputDir" value="${aia.audit.reports.dir}/PA"/>
+       <exec dir="${fp.code.compliance.home}/CodeComplianceInspector/bin" executable="sh">
+       <arg line="checkCompliance.sh -inputDir ${inputDir} -outputDir ${outputDir} -inputMetaFile ALL"/>    
+       </exec>  
+ </target>
+
+ <target name="auditpip" depends="checkPIPCode" if="isPIP">
+      <echo>
+      /--------------------------------------------------------\
+         Started Audit PIP : ${pipcode}
+      \--------------------------------------------------------/
+      </echo>
+	  <property name="inputDir" value="${aia.pip.src.dir}"/>
+	  <property name="outputDir" value="${aia.audit.reports.dir}/PA"/>
+       <exec dir="${fp.code.compliance.home}/CodeComplianceInspector/bin" executable="sh">
+		<arg line="checkCompliance.sh -inputDir ${inputDir} -outputDir ${outputDir} -inputMetaFile ${aia.pip.src.dir}/pips/${pipcode}/DeploymentPlans/${pipcode}DP.xml"/>    
+       </exec>  
+</target>
+
+<target name="checkPIPCode"> 
+	<property file="ant_checkCompliance.properties"/>
+	<echo>checking the value of pipcode ${pipcode}</echo>
+	  <condition property="isPIP">
+	   <and>
+		<isset property="pipcode"/>
+		<not><equals  arg1="${pipcode}" arg2="ALL" /></not>
+	   </and>
+	  </condition>
+
+</target>
+
+</project>

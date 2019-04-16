@@ -1,0 +1,138 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<ProfileAssertionSets time="Apr 30 2010 10:05:12AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor" version="AIA_10.x">
+ <ProfileAssertionSet name="Bootstrap">
+<Property name="xpathPrefixes"
+            value='ui="http://xmlns.oracle.com/soa/designer/";sca="http://xmlns.oracle.com/sca/1.0";bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/";xsl="http://www.w3.org/1999/XSL/Transform";aiacfg="http://xmlns.oracle.com/aia/core/config/V1";wsdl="http://schemas.xmlsoap.org/wsdl/";xsd="http://www.w3.org/2001/XMLSchema";xsd="http://www.w3.org/2001/XMLSchema";bpelx="http://schemas.oracle.com/bpel/extension";bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/";corecom="http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2";wsa="http://schemas.xmlsoap.org/ws/2003/03/addressing;'/>
+
+  <ProfileAssertion name="ABCSBPELProfileHarvester"
+                 description="Compliance Inspector recognizes BPEL projects based on bpel.xml existance and attaches project profile to all the files which are children of bpel.xml 's parent folder."
+                 executor="XMLProfiler" fileType="bpel.xml"
+                 category="ComplianceInspector-Bootstrap" priority="0"
+                 include="{ServiceType:ABCSImpl}">
+      <Property name="ServiceNameId" xpath="//BPELSuitcase/BPELProcess/@id" />
+      <Property name="ComponentName" xpath="//BPELSuitcase/BPELProcess/@id" />
+      <Property name="ServiceImplFile" xpath="//BPELSuitcase/BPELProcess/@src" />
+      <Property name="ServiceImplFilePath" value="${pwd}/${ServiceImplFile}" />
+      <Property name="ReceivePLinkName" file="${ServiceImplFilePath}"
+                xpath="//bpel:receive[@createInstance='yes']/@partnerLink" visible="false"/>
+      <Property name="PickPLinkName" file="${ServiceImplFilePath}"
+                xpath="//bpel:pick[@createInstance='yes']/bpel:onMessage/@partnerLink" visible="false"/>
+          <Property name="ServiceInterFileNameTemp" xpath="//BPELSuitcase/BPELProcess/partnerLinkBindings/partnerLinkBinding[@name='${ReceivePLinkName}' or @name='${PickPLinkName}']/property[@name='wsdlLocation'  and not(contains(.,'?'))]/text() | //BPELSuitcase/BPELProcess[(partnerLinkBindings/partnerLinkBinding/@name='${ReceivePLinkName}' or partnerLinkBindings/partnerLinkBinding/@name='${PickPLinkName}') and not(contains(//BPELSuitcase/BPELProcess/partnerLinkBindings/partnerLinkBinding[@name='${ReceivePLinkName}' or @name='${PickPLinkName}']/property[@name='wsdlLocation'  and not(contains(.,'?'))]/text(),'.wsdl'))]/@id"   />
+		  <Property name="ServiceInterFileName" xpath="substring-before(concat('${ServiceInterFileNameTemp}','.wsdl'),'.wsdl')"   />
+		  <Property name="ServiceInterFile" value="${pwd}/${ServiceInterFileName}.wsdl"   />
+      <Property name="hostName" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'http://'),'/')" />
+      <Property name="ServiceType" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${hostName}/'),'/')" />
+      <Property name="Application" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${ServiceType}/'),'/')" />
+      <Property name="IndustryName" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'Industry/'),'/')" />
+      <Property name="IndustryType" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${Application}/'),'/${IndustryName}')" />
+      <Property name="ServiceOperation" file="${ServiceInterFile}"
+                xpath="translate(substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${IndustryType}/${IndustryName}'),'${Application}'),'/','')"  />
+      <Property name="ComponentType" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'/${ServiceOperation}${Application}${IndustryName}'),'/')"  />
+      <Property name="WsdlServiceName"
+                value="${ServiceOperation}${Application}${IndustryName}${ComponentType}"  />
+      <Property name="Version" file="${ServiceInterFile}"
+                xpath="substring-after(/wsdl:definitions/@targetNamespace,'${WsdlServiceName}/')"  />
+       <Property name="MEP" class="oracle.soa.aia.governance.auditor.input.artifacts.reader.BPELFileReader" func="getMEP" args="${ServiceImplFilePath}"
+                   expressionLanguage="Java"   />
+       <Property name="assignTo1" rootDir="${pwd}/.." value=".:*.*" visible="false" />
+		<Property name="DepentantService"  xpath="/BPELSuitcase/BPELProcess/partnerLinkBindings/partnerLinkBinding" keyXpath="/partnerLinkBinding/@name" valueXpath.1="/partnerLinkBinding/property[@name[contains(.,'wsdlLocation')]]/text()" file.2="#{valueXpath.1}" valueXpath.2="/wsdl:definitions/@name" file.3="#{valueXpath.1}" valueXpath.3="/wsdl:definitions/@targetNamespace" returnType="Table"   />   
+		<!--Property name="EBOVersion" file="${ServiceInterFile}" xpath="take version from eol import"  /-->
+		<Property name="Services" file="${ServiceImplFilePath}" xpath="//bpel:receive" valueXpath.1="/bpel:receive/@partnerLink" returnType="List"  />
+		<Property name="References" file="${ServiceImplFilePath}" xpath="//bpel:invoke" valueXpath.1="/bpel:invoke/@partnerLink" returnType="List" />
+		<Property name="ServiceExtention" xpath="//partnerLinkBinding[contains(@name,${ComponentName}) and contains(@name,'Extension')]/property/text()" />
+
+	</ProfileAssertion>
+   
+    <ProfileAssertion name="EBFBPELProfileHarvester"
+                 description="Compliance Inspector recognizes BPEL projects based on bpel.xml existance and attaches project profile to all the files which are children of bpel.xml 's parent folder."
+                 executor="XMLProfiler" fileType="bpel.xml"
+                 category="ComplianceInspector-Bootstrap" priority="0"
+                 include="{ServiceType:EnterpriseFlows}">
+      <Property name="ServiceNameId" xpath="//BPELSuitcase/BPELProcess/@id"  />
+      <Property name="ComponentName" xpath="//BPELSuitcase/BPELProcess/@id"  />
+      <Property name="ServiceInterFile" value="${pwd}/${ServiceNameId}.wsdl"  />
+      <Property name="hostName" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'http://'),'/')"  />
+      <Property name="ServiceType" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${hostName}/'),'/')"  />
+      <Property name="IndustryName" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'Industry/'),'/')"  />
+      <Property name="IndustryType" file="${ServiceInterFile}"
+                xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${ServiceType}/'),'/${IndustryName}')"  />
+      <Property name="FlowName" file="${ServiceInterFile}"
+                xpath="concat(translate(substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${IndustryType}/${IndustryName}'),'EBF'),'/',''),'EBF')"  />
+      <Property name="Version" file="${ServiceInterFile}"
+                xpath="substring-after(/wsdl:definitions/@targetNamespace,'${FlowName}/')"  />
+      <Property name="ServiceImplFile" xpath="//BPELSuitcase/BPELProcess/@src"  />
+      <Property name="ServiceImplFilePath"
+                value="${pwd}/${ServiceNameId}.bpel"  />
+       <Property name="MEP" class="oracle.soa.aia.governance.auditor.input.artifacts.reader.BPELFileReader" func="getMEP" args="${ServiceImplFilePath}"
+                   expressionLanguage="Java"   />
+      <Property name="assignTo1" rootDir="${pwd}/.." value=".:*.*" visible="false" />
+      
+      </ProfileAssertion>
+   
+    <ProfileAssertion name="EBSESBProfileHarvester"
+                 description="Compliance Inspector recognizes ESB projects based on *.esb existance and attaches project profile to all the files which are children of bpel.xml 's parent folder."
+                 executor="XMLProfiler" fileType="*.esb"
+                 category="ComplianceInspector-Bootstrap" priority="0"
+                 include="{ComponentName:.*EBS.*}">
+      <Property name="ComponentName" value="${dirName}"  />
+      <Property name="ServiceType" value="EBS"  />
+      <Property name="isEBSResp"
+                xpath="contains('${ComponentName}','ResponseEBS') or contains('${ComponentName}','RespEBS') or contains('${ComponentName}','EBSResp')"  />
+      <Property name="isEBSOrches"
+                xpath="contains('${ComponentName}','OrchestrationEBS')"  />
+      <Property name="assignTo1" value=".:*.*" visible="false" />
+    </ProfileAssertion>
+    
+    <ProfileAssertion name="TransformAppContextBPELProfileHarvester"
+                 description="Compliance Inspector recognizes BPEL projects based on bpel.xml existance and attaches project profile to all the files which are children of bpel.xml 's parent folder."
+                 executor="XMLProfiler" fileType="bpel.xml"
+                 include="{ComponentName:.*AppContext.*}"
+                 category="ComplianceInspector-Bootstrap" priority="0">
+      <Property name="ServiceNameId" xpath="//BPELSuitcase/BPELProcess/@id"  />
+      <Property name="ComponentName" xpath="//BPELSuitcase/BPELProcess/@id"  />
+      <Property name="isTransAppContext"
+                xpath="contains('${ServiceNameId}','TransformAppContext')"  />
+      <Property name="assignTo1" rootDir="${pwd}/.." value=".:*.*" visible="false" />      
+    </ProfileAssertion>
+ 
+  <ProfileAssertion name="OthersBPELProfileHarvester"
+	description="Compliance Inspector recognizes BPEL projects based on bpel.xml existance and attaches project profile to all the files which are children of bpel.xml 's parent folder." executor="XMLProfiler" fileType="bpel.xml" category="ComplianceInspector-Bootstrap" priority="0"
+	exclude="ServiceType:.*ABCS.*,ServiceType:.*EnterpriseFlows.*,ServiceType:.*EBS.*">
+          <Property name="ComponentName" xpath="//BPELSuitcase/BPELProcess/@id"   />
+          <Property name="ServiceImplFile" xpath="//BPELSuitcase/BPELProcess/@src"   />
+          <Property name="ServiceImplFilePath" value="${pwd}/${ServiceImplFile}"   />
+          <Property name="ReceivePLinkName" file="${ServiceImplFilePath}" xpath="//bpel:receive[@createInstance='yes']/@partnerLink"   />
+          <Property name="PickPLinkName" file="${ServiceImplFilePath}" xpath="//bpel:pick[@createInstance='yes']/bpel:onMessage/@partnerLink"   />
+          <Property name="ServiceInterFileNameTemp" xpath="//BPELSuitcase/BPELProcess/partnerLinkBindings/partnerLinkBinding[@name='${ReceivePLinkName}' or @name='${PickPLinkName}']/property[@name='wsdlLocation'  and not(contains(.,'?'))]/text() | //BPELSuitcase/BPELProcess[(partnerLinkBindings/partnerLinkBinding/@name='${ReceivePLinkName}' or partnerLinkBindings/partnerLinkBinding/@name='${PickPLinkName}') and not(contains(//BPELSuitcase/BPELProcess/partnerLinkBindings/partnerLinkBinding[@name='${ReceivePLinkName}' or @name='${PickPLinkName}']/property[@name='wsdlLocation'  and not(contains(.,'?'))]/text(),'.wsdl'))]/@id"   />
+		  <Property name="ServiceInterFileName" xpath="substring-before(concat('${ServiceInterFileNameTemp}','.wsdl'),'.wsdl')"   />
+		  <Property name="ServiceInterFile" value="${pwd}/${ServiceInterFileName}.wsdl"   />
+          <Property name="hostName" file="${ServiceInterFile}" xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'http://'),'/')"   />
+          <Property name="ServiceType" file="${ServiceInterFile}" xpath="substring-before(substring-after(/wsdl:definitions/@targetNamespace,'${hostName}/'),'/')"   />
+          <Property name="ComponentType" value="Utilities"  />
+      <Property name="assignTo1" rootDir="${pwd}/.." value=".:*.*" visible="false" />
+  </ProfileAssertion>
+
+  <ProfileAssertion name="OthersESBProfileHarvester"
+	description="Compliance Inspector recognizes BPEL projects based on bpel.xml existance and attaches project profile to all the files which are children of bpel.xml 's parent folder." executor="XMLProfiler" fileType="*.esb" category="ComplianceInspector-Bootstrap" priority="0"
+	exclude="ComponentName:.*EBS.*">
+      <Property name="ComponentName" value="${dirName}"  />
+      <Property name="ServiceType" value="Adapters"  />
+      <Property name="isDBAdapter"
+                xpath="contains('${ComponentName}','DBA') or contains('${ComponentName}','Database') or contains('${ComponentName}','Oracle')"  />
+      <Property name="isJMSAdapter"
+                xpath="contains('${ComponentName}','JMS')"  />
+      <Property name="ComponentType" value="Adapters"  />
+        <Property name="assignTo1" rootDir="${pwd}" value=".:*.*" visible="false" />
+      
+  </ProfileAssertion>
+ </ProfileAssertionSet>
+</ProfileAssertionSets>

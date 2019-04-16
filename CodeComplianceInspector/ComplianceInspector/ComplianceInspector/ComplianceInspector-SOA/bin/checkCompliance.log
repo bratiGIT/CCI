@@ -1,0 +1,50 @@
+[SEVERE]-inputDir		 :inputDir		 :C:\Brati\CCIOutput\retail-tax-sca-cem
+[SEVERE]-outputDir		 :outputDir		 :C:\Brati\CCIFinal
+[SEVERE]-assertion		 :assertionName		 :AssertionSuccessTest_SOA
+[WARNING]Resolved output path : C:/Brati/CCIFinal/
+[WARNING]XML-22900: (Fatal Error) An internal error condition occurred.
+[SEVERE]javax.xml.transform.TransformerException: XML-22900: (Fatal Error) An internal error condition occurred.
+	at oracle.xml.jaxp.JXTransformer.reportException(JXTransformer.java:917)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:504)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.transform(HTMLFormatter.java:511)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.writeAuditorProfileReports(HTMLFormatter.java:228)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.writeProfileReports(PIPAuditor.java:528)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.runAudit(PIPAuditor.java:381)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.audit(PIPAuditor.java:682)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.run(PIPAuditor.java:737)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.main(PIPAuditor.java:765)
+Caused by: java.lang.NullPointerException
+	at oracle.xml.xslt.XSLForEachGroup.getKey(XSLForEachGroup.java:281)
+	at oracle.xml.xslt.XSLForEachGroup.process01(XSLForEachGroup.java:298)
+	at oracle.xml.xslt.XSLForEachGroup.process(XSLForEachGroup.java:241)
+	at oracle.xml.xslt.XSLForEachGroup.processAction(XSLForEachGroup.java:121)
+	at oracle.xml.xslt.XSLNode.processChildren(XSLNode.java:500)
+	at oracle.xml.xslt.XSLTemplate.processAction(XSLTemplate.java:205)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:599)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:565)
+	at oracle.xml.xslt.XSLProcessor.processXSL(XSLProcessor.java:347)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:487)
+	... 7 more
+---------
+java.lang.NullPointerException
+	at oracle.xml.xslt.XSLForEachGroup.getKey(XSLForEachGroup.java:281)
+	at oracle.xml.xslt.XSLForEachGroup.process01(XSLForEachGroup.java:298)
+	at oracle.xml.xslt.XSLForEachGroup.process(XSLForEachGroup.java:241)
+	at oracle.xml.xslt.XSLForEachGroup.processAction(XSLForEachGroup.java:121)
+	at oracle.xml.xslt.XSLNode.processChildren(XSLNode.java:500)
+	at oracle.xml.xslt.XSLTemplate.processAction(XSLTemplate.java:205)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:599)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:565)
+	at oracle.xml.xslt.XSLProcessor.processXSL(XSLProcessor.java:347)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:487)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.transform(HTMLFormatter.java:511)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.writeAuditorProfileReports(HTMLFormatter.java:228)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.writeProfileReports(PIPAuditor.java:528)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.runAudit(PIPAuditor.java:381)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.audit(PIPAuditor.java:682)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.run(PIPAuditor.java:737)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.main(PIPAuditor.java:765)
+
+[INFO]Assertion :: AssertionSuccessTest_SOA has :3 failures and 16 success
+[INFO]Please wait. CCI is generating reports in :C:/Brati/CCIFinal/retail-tax-sca-cem/
+[INFO]Compliance reports generated in : C:/Brati/CCIFinal/retail-tax-sca-cem/ : directory

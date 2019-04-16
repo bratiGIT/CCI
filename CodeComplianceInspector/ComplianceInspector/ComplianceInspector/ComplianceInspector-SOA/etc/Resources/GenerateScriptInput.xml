@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptGenerator>
+     <Application Name="Logistics" Version="6.0">
+          <Service Location="PIPS/Core/Logistics/RequestorABCS/UpdateTransportationSalesOrderListLogisticsReqABCSImpl"/>
+          <Service Location="PIPS/Core/Logistics/InboundAdapterServices/UpdatePlannedShipmentLogisticsAQConsumer"/>
+          <Service Location="PIPS/Core/Logistics/ProviderABCS/QueryTransportationSalesOrderItineraryListLogisticsProvABCSImpl"/>
+     </Application>
+    <Application Name="Ebiz" Version="R12.1">
+       <Service Location="PIPS/Core/Ebiz/InboundAdapterServices/QueryResponsibilityEbizAdapter"/>
+       <Service Location="PIPS/Core/Ebiz/ProviderABCS/SyncCustomerPartyListEbizProvABCSImpl"/>
+       <Service Location="PIPS/Core/Ebiz/InboundAdapterServices/SyncCustomerPartyEbizJMSConsumerV1"/>
+   </Application>
+    
+   <Application Name="Siebel" Version="SIA810">
+          <Service Location="PIPS/Core/Siebel/ProviderABCS/UpdateTransportationSalesOrderListSiebelProvABCSImpl"/>
+          <Service Location="PIPS/Core/Siebel/RequestorABCS/SyncTransportationSalesOrderListSiebelReqABCSImpl"/>
+          <Service Location="PIPS/Core/Siebel/JMSAdapterServices/TransportationSalesOrderListSiebelJMSConsumer"/>
+   </Application>
+   <Application Name="EBS" Version="">
+          <Service Location="PIPS/Core/EBS/TransportationSalesOrder/TransportationSalesOrderEBS"/>
+          <Service Location="PIPS/Core/EBS/TransportationSalesOrder/TransportationSalesOrderResponseEBS"/>
+   </Application>
+
+   <Application Name="EBSRoutingRules" Version="">
+          <Service Location="PIPS/Core/Setup/Fleet/OrderManagement/EBS/TransportationSalesOrder/TransportationSalesOrderEBS"/>
+          <Service Location="PIPS/Core/Setup/Fleet/OrderManagement/EBS/TransportationSalesOrder/TransportationSalesOrderResponseEBS"/>
+   </Application>
+
+     <PIPName>FleetOrderManagement</PIPName>
+</ScriptGenerator>

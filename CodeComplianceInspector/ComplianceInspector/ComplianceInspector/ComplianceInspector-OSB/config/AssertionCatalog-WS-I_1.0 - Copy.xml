@@ -1,0 +1,488 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<AssertionSets version="WS-I_1.0" time="March 12 2011 11:50:59AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor">
+ <!--
+	Section below defines the actual assertions that are checked at runtime by Compliance Inspector.
+	Few things to note are
+	1) assertions need a corresponding assertion element in Policies.xml so that they are executed at runtime.
+	2) Certain assertions declare 'ant style 'parameters like value='${naming}' . Now these can substituted at runtime from values in assertion in Policies.xml.
+	3) Each assertion can be implanted in different ways using different executors and operations. 
+ -->
+   <AssertionSet name="OraleAIAAssertions">
+	<!-- We can define certain properties which are common for all the assertions. -->
+      <Property name="xpathPrefixes" value="ui=&quot;http://xmlns.oracle.com/soa/designer/&quot;;sca=&quot;http://xmlns.oracle.com/sca/1.0&quot;;bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;;aiacfg=&quot;http://xmlns.oracle.com/aia/core/config/V1&quot;;wsdl=&quot;http://schemas.xmlsoap.org/wsdl/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;bpelx=&quot;http://schemas.oracle.com/bpel/extension&quot;;bpws=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;corecom=&quot;http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2&quot;;wsa=&quot;http://schemas.xmlsoap.org/ws/2003/03/addressing&quot;;sen=&quot;http://xmlns.oracle.com/bpel/sensor&quot;"/>
+      <Property name="Server_DirPath" value="${jvmarg:inputMetaDir}"/>
+      <Property name="Server_UrlPath" value="^(http|oramds).*AIAComponents/"/>
+
+	  
+		<!--
+			Next up we try to demonstrate how certain assertions can be added for a perticular architecture.
+			When defining an ESB routing service for example you are free to define routing rules to only the operations you would like to.
+			Suppose we would want to mandate the use of a test connector interface so as to give end consumer a more appropriate message than an exception, here is how we could do it using Compliance Inspector 
+		-->
+		
+		
+			<!--
+			This assertion ensures partner link properties are not used for web services authentication.
+			Oracle BPEL Server provides this option using partnerlink properties but OWSM should be prefered for this purpose.
+			-->
+      <Assertion name="NoPlinkusageForSettingWSSecPropCheck" description="BPEL processes should not use property for passing the username and password for ws-security. OWSM should be used for all web services invocation authentication purposes." fileType="composite.xml" context="" priority="1" executor="XPathExecutor" operation="xpathNotExistsCheck" category="Security Standards">
+         <Param name="xpath.search" default="//sca:property[contains(@name,'oracle.web services.auth.username') or contains(@name,'oracle.web services.auth.password')]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+			<!--
+			This assertion ensures DVM stores do not sure authentication properties like user name and password.
+			It assumes all the DVM's are source controlled in a directory named DVM. So it checks for  all XML files under the DVM folder.
+			The tokens used like uname and pwd can be changed from the policies file without having to modify the assertion.
+			-->
+      <Assertion name="NoUnamePwdInDVMCheck" description="DVM stores should have no credentials stored. They should not contain UserName and Password values. OWSM should be used for all Web Services invocation authentication purposes." fileType="*.xml" context="" priority="1" executor="XPathExecutor" operation="xpathValueNotContainsCheck" category="Security Standards" fileFilter="{DIR:DVM}">
+         <Param name="xpath.search" default="//column/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" value="${unamePwdString}" default="UserName;Password;uname;pwd;username;password"/>
+      </Assertion>
+			<!-- 
+				Next couple of assertions, we try to enfore a good coding practice for XSL and WSDL.
+			-->
+      <Assertion name="NoSchemaElementsDefinedInWSDLCheck" description="WSDL should use schema imports. All schema elements should be defined in XSD." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="Reusability Standards">
+         <Param name="xpath.search" default="/wsdl:definitions/wsdl:types/xsd:schema/xsd:element"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="NoLocalAdaptersInBPELCheck" description="Adapters should be defined as an ESB service. This helps us in Endpoint Virtualization. Also BPEL process gains homogeneity, focusing on business problems rather than protocol transformations." fileType="*" context="{ImplementationType:COMPOSITE}" priority="3" executor="FSExecutor" operation="fileNotExistCheck" category="Reusability Standards">
+         <Param name="filename.search.regxpattern" value="${pattern}" default=".*(Adapter).*.wsdl"/>
+      </Assertion>
+      <Assertion name="NoLocalSchemasInBPELCheck" description="BPEL Process folder should not contain any schema files. All Utility schema should be accessed from a web server." fileType="*" context="" priority="2" executor="FSExecutor" operation="fileNotExistCheck" category="Reusability Standards">
+         <Param name="filename.search.regxpattern" value="${pattern}" default="*.xsd"/>
+      </Assertion>
+      <Assertion name="CatchBlockRemoteFaultExistInBPELCheck" description="Catch block has to be defined for remoteFault in BPEL process." fileType="*.bpel" context="" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="Error Handling Standards">
+         <Param name="xpath.search" value="//bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:remoteFault')]/@faultVariable" default="//bpel:process/bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:remoteFault')]/@faultVariable"/>
+         <Param name="xpath.namespace.prefixes" default="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+      </Assertion>
+      <Assertion name="CatchBlockBindingFaultExistInBPELCheck" description="Catch block has to be defined for BindingFault in BPEL process." fileType="*.bpel" context="" priority="2" executor="XPathExecutor" operation="xpathExistsCheck" category="Error Handling Standards">
+         <Param name="xpath.search" value="//bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:bindingFault')]/@faultVariable" default="//bpel:process/bpel:faultHandlers/bpel:catch[contains(@faultName,'bpelx:bindingFault')]/@faultVariable"/>
+         <Param name="xpath.namespace.prefixes" default="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+      </Assertion>
+		<!-- 
+			Naming checks. Although we would want to give developer freedom in terms of naming the activities in BPEL, we would want to enforce 
+			at the same time some naming practice is followed. Below we check if atleast the standard names have been changed by the developer.
+			We could easily change the checks so as to enforce some naming standards by passing some value in the  ${naming} variable from the policies file.
+		-->
+      <Assertion name="NameSpacePrefixesNamingInBPELCheck" description="In a BPEL process namespace prefixes should follow naming standard guidelines. The ns1, ns2 prefixes which are generated by default are not allowed." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//namespace::*[starts-with(name(),'ns')]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+      </Assertion>
+    
+	   <!--Assertion name="ProxyActivityDescriptionCheck" description="Check if the description exists for the proxy." fileType="*.pipeline" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//con:pipelineEntry/con:coreEntry/con:description"/>
+         <Param name="xpath.namespace.prefixes" value="con=&quot;http://www.bea.com/wli/sb/pipeline/config&quot;"/>
+         <Param name="xpath.match.regxpattern" value="To Print HelloWorld" default="(A|a)ssign(_)*[0-9]*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion-->
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy1" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=1]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=1])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy2" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=2]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=2])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy3" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=3]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=3])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy4" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=4]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=4])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy5" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=5]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=5])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy6" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=6]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=6])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy7" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=7]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=7])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch1Copy8" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=8]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=1]//bpel:assign/bpel:copy[position()=8])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	   <Assertion name="BPELSwitchVariableCheckCatch2Copy1" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=1]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=1])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+		 <Param name="xpath.match.regxpattern" value="false\(\)|true\(\)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy2" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=2]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=2])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy3" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=3]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=3])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy4" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=4]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=4])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy5" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=5]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=5])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy6" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=6]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=6])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy7" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=7]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=7])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch2Copy8" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=8]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=2]//bpel:assign/bpel:copy[position()=8])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	   <Assertion name="BPELSwitchVariableCheckCatch3Copy1" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=1]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=1])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+		 <Param name="xpath.match.regxpattern" value="false\(\)|true\(\)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy2" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=2]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=2])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy3" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=3]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=3])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy4" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=4]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=4])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy5" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=5]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=5])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy6" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=6]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=6])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy7" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=7]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=7])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableCheckCatch3Copy8" description="Check if the switch variable is assigned in the bpel." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[@name='ErrorScope']//bpel:switch/bpel:case[contains(@condition,//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=8]/bpel:to/@variable) and boolean(//bpel:faultHandlers/bpel:catch[position()=3]//bpel:assign/bpel:copy[position()=8])]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	   <!--Assertion name="BPELSwitchVariableAssignedCheck" description="DVM stores should have no credentials stored. They should not contain UserName and Password values. OWSM should be used for all Web Services invocation authentication purposes." fileType="*.bpel" context="" priority="1" executor="FSExecutor" operation="CompareNodeWithRegExXMLCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[contains(@name,'ErrorScope')]/bpel:switch/bpel:case/@condition"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>         
+         <Param name="xml.external.filename" value="*.bpel"/>
+		 <Param name="xml.external.search.xpath" default="//bpel:scope[contains(@name,'ErrorScope')]/bpel:switch/bpel:case/@condition"/>
+      </Assertion>
+	  <Assertion name="BPELSwitchVariableAssignedCheck" description="DVM stores should have no credentials stored. They should not contain UserName and Password values. OWSM should be used for all Web Services invocation authentication purposes." fileType="*.bpel" context="" priority="1" executor="FSExecutor" operation="CompareNodeWithRegExXMLCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[contains(@name,'ErrorScope')]/bpel:switch/bpel:case/@condition"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>         
+         <Param name="xml.external.filename" value="*.bpel"/>
+		 <Param name="xml.external.search.xpath" default="//bpel:scope[contains(@name,'ErrorScope')]/bpel:switch/bpel:case/@condition"/>
+      </Assertion-->
+	   <Assertion name="BPELErrorScopeExistsCheck" description="The Error Scope should exist in the BPEL." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpel:scope[contains(@name,'Error')]"/>
+         <Param name="xpath.namespace.prefixes" value="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  <Assertion name="BPELSetTitleExistsCheck" description="The Title should be set for the composite." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//bpelx:exec[contains(@name,'Title')]"/>
+         <Param name="xpath.namespace.prefixes" value="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;;bpelx=&quot;http://schemas.oracle.com/bpel/extension&quot;;"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+     </Assertion>
+	 <Assertion name="CompositePreferenceVariableAssignedCheck" description=" The Preference variable for the BAMFLAG should be assigned to N in the composite." fileType="composite.xml" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//com:composite/com:component/com:property[contains(@name,'bpel.preference.BamFlag')]"/>
+		 <Param name="xpath.namespace.prefixes" value="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;com=&quot;http://xmlns.oracle.com/sca/1.0&quot;;"/> 
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" default="N"/>		 
+      </Assertion>
+	  <Assertion name="FaultPoliciesExistCheck" description="Attach Fault Policies for the composite" fileType="composite.xml" context="" priority="3" executor="XPathExecutor" operation="xpathExistsCheck" category="Coding Standards">
+         <Param name="xpath.search" default="//com:composite/com:property[contains(@name,'oracle.composite.faultBindingFile') or contains(@name,'oracle.composite.faultPolicyFile')]"/>
+		 <Param name="xpath.namespace.prefixes" value="bpel=&quot;http://schemas.xmlsoap.org/ws/2003/03/business-process/&quot;;com=&quot;http://xmlns.oracle.com/sca/1.0&quot;;"/> 
+         <Param name="xpath.notexist.ignore" default="true"/>	 
+      </Assertion>
+	  <Assertion name="BPELAssignActivityNamingCheck" description="Change the default Jdeveloper generated name for the 'assign' activity." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//bpel:assign/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(A|a)ssign(_)*[0-9]*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  
+	  <Assertion name="ProxyAssignVariableNamingCheck" description="Change the default Jdeveloper generated name for the 'assign' activity." fileType="*.proxy" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//@varName"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="var*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+	  
+	  
+      <Assertion name="BPELInvokeActivityNamingCheck" description="Change the default Jdeveloper generated name for the 'invoke' activity." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesNotMatchPatternCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//bpel:invoke/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" value="${naming}" default="(I|i)nvoke(_)*[0-9]*"/>
+      </Assertion>
+      <Assertion name="BPELReplyActivityNamingCheck" description="Change the default Jdeveloper generated name for the 'reply' activity." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesNotMatchPatternCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//bpel:reply/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" default="(R|r)eply(_)*[0-9]*"/>
+      </Assertion>
+      <Assertion name="BPELReceiveActivityCheck" description="Change the default Jdeveloper generated name for the 'receive' activity." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesNotMatchPatternCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//bpel:receive/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" default="(R|r)eceive(_)*[0-9]*"/>
+      </Assertion>
+      <Assertion name="BPELScopeActivityCheck" description="Change the default Jdeveloper generated name for the 'scope' activity." fileType="*.bpel" context="" priority="3" executor="XPathExecutor" operation="xpathValuesNotMatchPatternCheck" category="Naming Standards">
+         <Param name="xpath.search" default="//bpel:scope/@name"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.match.regxpattern" default="(S|s)cope(_)*[0-9]*"/>
+      </Assertion>
+	  <!-- Tokenizer assertions check -->		 
+      <Assertion name="TonkenizedReferencesInCompositeCheck" description="All the http urls pointing to http server location should be tokenized with ${hostname} and ${port}." fileType="composite.xml" context="" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Loose Coupling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="http://\$(\\)?\{[a-zA-Z_\.]*(\\)?\}:\$(\\)?\{[a-zA-Z_\.]*(\\)?\}.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[not(contains(name(),':')) and not(contains(name(),'namespace')) and not(contains(name(),'targetNamespace')) and not(contains(name(),'interface')) and not(contains(name(),'callbackInterface')) and not(contains(name(),'port')) and not(contains(name(),'expressionLanguage')) and not(contains(name(),'queryLanguage')) and starts-with(.,'http:')]"/>
+      </Assertion>
+      <Assertion name="TonkenizedReferencesInWSDLCheck" description="All the http urls pointing to http server location should be tokenized with ${hostname} and ${port}" fileType="*.wsdl" context="" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Loose Coupling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="http://\$(\\)?\{[a-zA-Z_\.]*(\\)?\}:\$(\\)?\{[a-zA-Z_\.]*(\\)?\}.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[not(contains(name(),':')) and not(contains(name(),'namespace')) and not(contains(name(),'targetNamespace')) and not(contains(name(),'interface')) and not(contains(name(),'callbackInterface')) and not(contains(name(),'port')) and not(contains(name(),'expressionLanguage')) and not(contains(name(),'queryLanguage')) and starts-with(.,'http:')]"/>
+      </Assertion>
+      <Assertion name="TonkenizedReferencesInXSLCheck" description="All the http urls pointing to http server location should be tokenized with ${hostname} and ${port}" fileType="*.xsl" context="" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="http://\$(\\)?\{[a-zA-Z_\.]*(\\)?\}:\$(\\)?\{[a-zA-Z_\.]*(\\)?\}.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[not(contains(name(),':')) and not(contains(name(),'namespace')) and not(contains(name(),'targetNamespace')) and not(contains(name(),'interface')) and not(contains(name(),'callbackInterface')) and not(contains(name(),'port')) and not(contains(name(),'expressionLanguage')) and not(contains(name(),'queryLanguage')) and starts-with(.,'http:')]"/>
+      </Assertion>
+      <Assertion name="TonkenizedReferencesInBpelCheck" description="All the http urls pointing to http server location should be tokenized with ${hostname} and ${port}" fileType="*.bpel" context="" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Loose Coupling Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="http://\$(\\)?\{[a-zA-Z_\.]*(\\)?\}:\$(\\)?\{[a-zA-Z_\.]*(\\)?\}.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[not(contains(name(),':')) and not(contains(name(),'namespace')) and not(contains(name(),'targetNamespace')) and not(contains(name(),'interface')) and not(contains(name(),'callbackInterface')) and not(contains(name(),'port')) and not(contains(name(),'expressionLanguage')) and not(contains(name(),'queryLanguage')) and starts-with(.,'http:')]"/>
+      </Assertion>
+      <Assertion name="TXNEnableInFireForget" description="This check is for Fire and Forget service. It has to participate in a global transaction." fileType="composite.xml" context="{MEP:REQUEST_ONLY}" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="required"/>
+         <Param name="xpath.search" default="//sca:property[contains(@name,'bpel.config.transaction')]"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="TXNEnableInASyncDelayed" description="This check is for Async Delayed Response service. It has to participate in a global transaction." fileType="composite.xml" context="{MEP:ASYNC_REQ_RESPONSE}" priority="2" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="required"/>
+         <Param name="xpath.search" default="//sca:property[contains(@name,'bpel.config.transaction')]"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="CompletionPersistPolicyCheck" description="bpel.config.completionPersistPolicy property configures how the instance data is saved. For synch transient processes value for this property should be 'faulted' i.e. only the faulted instances will be saved" fileType="composite.xml" context="{MEP:SYNC_REQ_RESPONSE},{LifeTime:Transient}" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Performance Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="faulted"/>
+         <Param name="xpath.search" default="//sca:property[contains(@name,'bpel.config.completionPersistPolicy')]"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SynchAuditLogLevelCheck" description="bpel.config.auditLavel property configures how the BPEL service engine will capture audit details. For Synch Transient processes value for this property should be 'faulted'." fileType="composite.xml" context="{MEP:SYNC_REQ_RESPONSE},{LifeTime:Transient}" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Performance Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="faulted"/>
+         <Param name="xpath.search" default="//sca:property[contains(@name,'bpel.config.auditLevel')]"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="NoTargetSysIdHardWiringInXREFLookupCheck" description="Target SystemId should not be hardwired in XREF lookup when used in XSL. Syntax used should be xref:lookupXRef('XREF_NAME',$XREFSourceCol,XPATH,$XREFTargetCol,true()|false()) where XREF_NAME can contain alphanumeric and underscore characters and XPATH can contain any XPATH expression. Note: targetId column could be one of the following: 1) Any Xpath. 2) 'COMMON' 3) Variable which does not contain a hard coded string value. 4) Xpath function." fileType="*.xsl" context="" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*[a-z_A-Z_0-9]*:lookupXRef(1M)?\([\s]*.*[\s]*,[\s]*((\$.*)|(.COMMON.)|([A-Z_a-z0-9:]*\(.*\)))[\s]*,[\s]*.*[\s]*,[\s]*((\$.*)|(.COMMON.)|([A-Z_a-z0-9:]*\(.*\))|(.*/[a-z_A-Z_0-9]*:.*))[\s]*,.*\).*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[contains(.,':lookupXRef')]"/>
+      </Assertion>
+      <Assertion name="NoTargetSysIdHardWiringInDVMLookupCheck" description="Target SystemId should not be hardwired in DVM lookup when used in XSL. Syntax used should be orcl:lookupValue('DVM_NAME',$DVMSourceCol,XPATH,$DVMTargetCol,'') where DVM_NAME can contain alphanumeric and underscore characters and XPATH can contain any XPATH expression. Note: targetId column could be one of the following: 1) Any Xpath. 2) 'COMMON' 3) Variable which does not contain a hard coded string value. 4) Xpath function." fileType="*.xsl" context="" priority="1" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="Coding Standards">
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*[a-z_A-Z_0-9]*:lookupValue\([\s]*.*[\s]*,[\s]*(([a-zA-Z_0-9:]*\(.*\))|(\$)|(.COMMON)|(.*_USER_OU.)).*[\s]*,[\s]*.*[\s]*,[\s]*(([a-zA-Z_0-9:]*\(.*\))|(\$)|(.COMMON)|(.*/[a-z_A-Z_0-9]*:.*)|(.*_RESP.)).*[\s]*\)[\s]*.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+         <Param name="xpath.search" default="//@*[contains(.,':lookupValue')]"/>
+      </Assertion>
+   </AssertionSet>
+   
+   <AssertionSet name="WSI">
+   		<!-- 
+		     Web Service interoperability provides standards that WSDL's should follow for interoperability. http://www.ws-i.org/Profiles/BasicProfile-1.0-2004-04-16.html
+		     WSDL's can be written without enforcing these and it will still be a valid wsdl if WSDL specifications are followed.
+		     Conformance to the Profile is defined by adherence to the set of requirements for a specific target, within the scope of the Profile.
+		     Using Compliance Inspector, we try to write a few assertions for WS-I 
+		     Ideally we would not get any errors in this since JDeveloper already takes care of these checks.
+		-->	
+      <Assertion name="WSDLDocumentationIsFirstChildCheck" description="The wsdl:documentation element may be present as the first child element of wsdl:import, wsdl:part and wsdl:definitions in addition to the elements cited in the WSDL1.1 specification" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:documentation/parent::*[position()=1]/child::*[name()='documentation' and position()!=1]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="UTFEncodingUsedinWSDLCheck" description="WSDL description must use UTF-8 or UTF-16 encoding. UTF encoding can be specified in the processing instruction of an xml. The assertion looks for the existence of UTF in the processing instruction. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="FSExecutor" operation="fileContentSearchExistsCheck" category="WS-I BP Standards">
+         <Param name="filecontent.search.regxpattern" default="^\s{0,}(&lt;\?xml)[a-zA-Z0-9(&quot;|')=\.\s]*(encoding)\s{0,}=\s{0,}(&quot;|')UTF-(8|16)(&quot;|')[a-zA-Z0-9(&quot;|')=\.\s]*(?>)"/>
+      </Assertion>
+      <Assertion name="UTFEncodingUsedinSchemaCheck" description="Schema definition must use UTF-8 or UTF-16 encoding. UTF encoding can be specified in the processing instruction of an xml. The assertion looks for the existence of UTF in the processing instruction. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.xsd" context="" priority="3" executor="FSExecutor" operation="fileContentSearchExistsCheck" category="WS-I BP Standards">
+         <Param name="filecontent.search.regxpattern" default="^\s{0,}(&lt;\?xml)[a-zA-Z0-9(&quot;|')=\.\s]*(encoding)\s{0,}=\s{0,}(&quot;|')UTF-(8|16)(&quot;|')[a-zA-Z0-9(&quot;|')=\.\s]*(?>)"/>
+      </Assertion>
+      <Assertion name="XMLversionUsageInWSDLCheck" description="WSDL file must use xml version 1.0. XML version can be specified in the processing instruction of an XML. The assertion looks for the existence of version in the processing instruction. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="FSExecutor" operation="fileContentSearchExistsCheck" category="WS-I BP Standards">
+         <Param name="filecontent.search.regxpattern" default="^\s{0,}(&lt;\?xml)[a-zA-Z0-9(&quot;|')=\.\s]*(version)\s{0,}=\s{0,}(&quot;|')1\.0(&quot;|')[a-zA-Z0-9(&quot;|')=\.\s]*(?>)"/>
+      </Assertion>
+      <Assertion name="XMLversionUsageInSchemaCheck" description="XSD file must use xml version 1.0. XML version can be specified in the processing instruction of an XML. The assertion looks for the existence of version in the processing instruction. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.xsd" context="" priority="3" executor="FSExecutor" operation="fileContentSearchExistsCheck" category="WS-I BP Standards">
+         <Param name="filecontent.search.regxpattern" default="^\s{0,}(&lt;\?xml)[a-zA-Z0-9(&quot;|')=\.\s]*(version)\s{0,}=\s{0,}(&quot;|')1\.0(&quot;|')[a-zA-Z0-9(&quot;|')=\.\s]*(?>)"/>
+      </Assertion>
+      <Assertion name="WSDLImportUsedforWSDLOnlyCheck" description="WSDL import element must not be used to import other kinds of XML schema. WSDL import should only import WSDLs. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:import/@location"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*(w|W)(s|S)(d|D)(l|L)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLImportOnlyPrecededByDocCheck" description="All WSDL import elements must only be preceded by WSDL documentation element in a WSDL file. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="local-name(//wsdl:import/preceding-sibling::*[position()=1])"/>
+         <Param name="return.tpye" default="String"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(wsdl:)?documentation"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLImportLocationNotEmptyCheck" description="The location attribute of all wsdl:import elements must be non-empty." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:import/@location"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*[a-zA-Z_0-9].*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLImportNoRelativeURIInNSCheck" description="The namespace attribute of wsdl:import must not be a relative URI. The URI should be an absolute URI as per URI standards. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:import/@namespace"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*(:/){1,}.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLFileRootDefinitionsCheck" description="Every wsdl should import wsdl file which has definitions as a root node in location of wsdl:import. This assertion assumes that inputDir should contain AIAMetaData directory in it." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathsValueMatchOfRefDocumentCheck" category="WS-I BP Standards">
+         <Param name="xml.fragment.xpath" default="//wsdl:import"/>
+         <Param name="xml.ref.location.xpath" default="//wsdl:import/@location"/>
+         <Param name="xml.ref.matchkey.xpath" default="//wsdl:import/@location"/>
+         <Param name="xpath.1.search" default="name(/*)"/>
+         <Param name="xpath.1.match.regxpattern" default="(wsdl:)?definitions"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.import.server.urlpath" value="${Server_UrlPath}"/>
+         <Param name="xml.import.local.dirpath" value="${Server_DirPath}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLTargetNamespaceMatchingCheck" description="Every wsdl must not import wsdl which has different targetNamespace in definitions. This assertion assumes that inputDir should contain AIAMetaData directory in it." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathsValueMatchOfRefDocumentCheck" category="WS-I BP Standards">
+         <Param name="xml.fragment.xpath" default="//wsdl:import"/>
+         <Param name="xml.ref.location.xpath" default="//wsdl:import/@location"/>
+         <Param name="xml.ref.matchkey.xpath" default="//wsdl:import/@location"/>
+         <Param name="xpath.1.search" default="/wsdl:definitions/@targetNamespace"/>
+         <Param name="xpath.1.match.xpath" default="/wsdl:definitions/@targetNamespace"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.import.server.urlpath" value="${Server_UrlPath}"/>
+         <Param name="xml.import.local.dirpath" value="${Server_DirPath}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLTypesOnlyPrecededByDocAndImportCheck" description="All WSDL types elements must only be preceded by WSDL documentation element or wsdl import in a WSDL file. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="local-name(//wsdl:types/preceding-sibling::*[position()=1])"/>
+         <Param name="return.tpye" default="String"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(wsdl:)?(documentation|import)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLImportsOnlyInsideDefinitionCheck" description="All WSDL 'import' statements must be within wsdl:definition elements." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:import/parent::*[name()!='definitions' and name()!='wsdl:definitions']"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaNodeOnlyInsideWsdlTypesCheck" description="XML Schema element must be within the xsd:types element of the types element." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="local-name(//xsd:schema/parent::*[position()=1])"/>
+         <Param name="return.tpye" default="String"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(wsdl:)?types"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaImportsOnlyInsideSchemaCheck" description="XML Schema 'import' statement must be within the xsd:schema element of the types element." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="local-name(//xsd:import/parent::*[position()=1])"/>
+         <Param name="return.tpye" default="String"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default="(xsd:)?schema"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaImportUsedforXSDOnlyCheck" description="WSDL import element must not be used to import other kinds of XML schema. WSDL import should only import WSDLs. This check is to ensure compatibility with WS interoperability basic profile 1.0" fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathValuesPatternMatchCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//xsd:import/@schemaLocation"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.match.regxpattern" default=".*(x|X)(s|S)(d|D)"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaTargetNamespaceExistCheck" description="All xsd:schema elements contained in a wsdl:types element must have a targetNamespace attribute with a valid and non-null value, unless the xsd:schema element has xsd:import and/or xsd:annotation as its only child element(s)." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathListValueMatchInDocumentFragmentCheck" category="WS-I BP Standards">
+         <Param name="xml.fragment.xpath" default="//wsdl:types/xsd:schema[child::*[local-name()!='import' and local-name()!='annotation']]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.1.search" value="//xsd:schema/@targetNamespace"/>
+         <Param name="xpath.1.match.regxpattern" value="http.*"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaXSDFileRootSchemaCheck" description="Every xsd file should import xsd file which has schema as a root node in location of xsd:import. This assertion assumes that inputDir should contain AIAMetaData directory in it." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathsValueMatchOfRefDocumentCheck" category="WS-I BP Standards">
+         <Param name="xml.fragment.xpath" default="//xsd:import"/>
+         <Param name="xml.ref.location.xpath" default="//xsd:import/@schemaLocation"/>
+         <Param name="xml.ref.matchkey.xpath" default="//xsd:import/@schemaLocation"/>
+         <Param name="xpath.1.search" default="name(/*)"/>
+         <Param name="xpath.1.match.regxpattern" default="(xsd:)?schema"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.import.server.urlpath" value="${Server_UrlPath}"/>
+         <Param name="xml.import.local.dirpath" value="${Server_DirPath}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="SchemaTargetNamespaceMatchingCheck" description="Every wsdl must not import wsdl which has different targetNamespace in definitions. This assertion assumes that inputDir should contain AIAMetaData directory in it." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathsValueMatchOfRefDocumentCheck" category="WS-I BP Standards">
+         <Param name="xml.fragment.xpath" default="//xsd:import"/>
+         <Param name="xml.ref.location.xpath" default="//xsd:import/@schemaLocation"/>
+         <Param name="xml.ref.matchkey.xpath" default="//xsd:import/@schemaLocation"/>
+         <Param name="xpath.1.search" default="/xsd:schema/@targetNamespace"/>
+         <Param name="xpath.1.match.xpath" default="/xsd:import/@namespace"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xml.import.server.urlpath" value="${Server_UrlPath}"/>
+         <Param name="xml.import.local.dirpath" value="${Server_DirPath}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLPartMustNotUseElementAndTypeCheck" description="A wsdl:message element must not specify both 'type' and 'element' attributes on the same wsdl:part element." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:message/wsdl:part/@type/../@element"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLOperationMustHaveInputCheck" description="Solicit-Response and Notification type operations must not be used in a wsdl:portType definition. i.e. output message should always be after the input message." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:operation/wsdl:input/preceding-sibling::wsdl:output"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+      <Assertion name="WSDLOperationNameMustBeUniqueCheck" description="All wsdl:portType elements must have operations with distinct values for their name attributes(overloading)." fileType="*.wsdl" context="" priority="3" executor="XPathExecutor" operation="xpathNotExistsCheck" category="WS-I BP Standards">
+         <Param name="xpath.search" default="//wsdl:portType/wsdl:operation[contains(./preceding-sibling::*/@name,@name)]"/>
+         <Param name="xpath.namespace.prefixes" value="${xpathPrefixes}"/>
+         <Param name="xpath.notexist.ignore" default="true"/>
+      </Assertion>
+   </AssertionSet>
+</AssertionSets>

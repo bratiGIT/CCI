@@ -1,0 +1,58 @@
+[SEVERE]-inputDir		 :inputDir		 :C:\Users\IBM_ADMIN\workspace\TestSBProject
+[SEVERE]-outputDir		 :outputDir		 :C:\result
+[WARNING]Resolved output path : C:/result/
+[WARNING]XML-22900: (Fatal Error) An internal error condition occurred.
+[SEVERE]javax.xml.transform.TransformerException: XML-22900: (Fatal Error) An internal error condition occurred.
+	at oracle.xml.jaxp.JXTransformer.reportException(JXTransformer.java:917)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:504)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.transform(HTMLFormatter.java:511)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.writeAuditorProfileReports(HTMLFormatter.java:228)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.writeProfileReports(PIPAuditor.java:528)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.runAudit(PIPAuditor.java:381)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.audit(PIPAuditor.java:682)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.run(PIPAuditor.java:737)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.main(PIPAuditor.java:765)
+Caused by: java.lang.NullPointerException
+	at oracle.xml.xslt.XSLForEachGroup.getKey(XSLForEachGroup.java:281)
+	at oracle.xml.xslt.XSLForEachGroup.process01(XSLForEachGroup.java:298)
+	at oracle.xml.xslt.XSLForEachGroup.process(XSLForEachGroup.java:241)
+	at oracle.xml.xslt.XSLForEachGroup.processAction(XSLForEachGroup.java:121)
+	at oracle.xml.xslt.XSLNode.processChildren(XSLNode.java:500)
+	at oracle.xml.xslt.XSLTemplate.processAction(XSLTemplate.java:205)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:599)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:565)
+	at oracle.xml.xslt.XSLProcessor.processXSL(XSLProcessor.java:347)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:487)
+	... 7 more
+---------
+java.lang.NullPointerException
+	at oracle.xml.xslt.XSLForEachGroup.getKey(XSLForEachGroup.java:281)
+	at oracle.xml.xslt.XSLForEachGroup.process01(XSLForEachGroup.java:298)
+	at oracle.xml.xslt.XSLForEachGroup.process(XSLForEachGroup.java:241)
+	at oracle.xml.xslt.XSLForEachGroup.processAction(XSLForEachGroup.java:121)
+	at oracle.xml.xslt.XSLNode.processChildren(XSLNode.java:500)
+	at oracle.xml.xslt.XSLTemplate.processAction(XSLTemplate.java:205)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:599)
+	at oracle.xml.xslt.XSLStylesheet.execute(XSLStylesheet.java:565)
+	at oracle.xml.xslt.XSLProcessor.processXSL(XSLProcessor.java:347)
+	at oracle.xml.jaxp.JXTransformer.transform(JXTransformer.java:487)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.transform(HTMLFormatter.java:511)
+	at oracle.soa.aia.governance.auditor.output.formatter.HTMLFormatter.writeAuditorProfileReports(HTMLFormatter.java:228)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.writeProfileReports(PIPAuditor.java:528)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.runAudit(PIPAuditor.java:381)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.audit(PIPAuditor.java:682)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.run(PIPAuditor.java:737)
+	at oracle.soa.aia.governance.auditor.tools.PIPAuditor.main(PIPAuditor.java:765)
+
+[INFO]Assertion :: RouteNodeErrorHandlerCheck has :1 failures and 1 success
+[INFO]Assertion :: StageErrorHandlerCheck has :2 failures and 0 success
+[INFO]Assertion :: PipelineErrorHandlerCheck has :0 failures and 2 success
+[INFO]Assertion :: ProxyAssignVariableNamingCheck has :0 failures and 2 success
+[INFO]Assertion :: ProxyRouteNodeNamingCheck has :0 failures and 2 success
+[INFO]Assertion :: ProxyDescriptionPopulatedCheck has :0 failures and 2 success
+[INFO]Assertion :: BusinessServiceDescriptionPopulatedCheck has :0 failures and 2 success
+[INFO]Assertion :: ProxyStageNamingCheck has :0 failures and 4 success
+[INFO]Assertion :: XSLTTranformNotUsedCheck has :0 failures and 2 success
+[INFO]Assertion :: TooManysAssignNotUsedCheck has :0 failures and 2 success
+[INFO]Please wait. CCI is generating reports in :C:/result/TestSBProject/
+[INFO]Compliance reports generated in : C:/result/TestSBProject/ : directory

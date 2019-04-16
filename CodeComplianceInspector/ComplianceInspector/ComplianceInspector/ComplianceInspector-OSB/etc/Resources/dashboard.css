@@ -1,0 +1,166 @@
+load{
+	background-color:#FFFFFF;
+}
+
+img.transparent{
+	opacity: 0.5;
+}
+
+body{
+	background:#FFFFFF;
+	color:#000;
+	margin:3px 8px;
+	overflow:auto;
+}
+caption {
+	font-weight: bold;
+	font-size: 1.7em; 
+	text-align: left; 
+	margin: 0; 
+	padding: 0.5em 0.25em;
+	border: 1px solid #660000;
+}
+
+table{
+	font: 100%/1.5em "Trebuchet MS", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	border-spacing:0px;
+	margin: 0 0 1em 0;
+	color:#000;
+	border: 1px solid #660000;
+	background-color:#FFFFFF;
+	overflow:auto;
+	}
+table.title{
+	font: 100%/1.5em "Trebuchet MS", "Bitstream Vera Sans", Verdana, Helvetica, sans-serif;
+	border: none;
+	border-spacing:0px;
+	border-style: none;
+	margin: 0 0 1em 0;
+	color:#000;
+	background-color:#FFFFFF;
+}
+table.failedTest {
+	border-width: 1px;
+	border-spacing: 1px;
+	border-style: dotted;
+	border-color: gray;
+	border-collapse: separate;
+	overflow:auto;
+}
+tr.odd {
+background-color:#E5E4D5;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#000;
+}
+tr.even {
+background-color:#ECF1EF;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#000;
+}
+tr.heading0 {
+background-color:#B5C7E7;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#FFFFFF;font-size:112%;overflow:auto;
+}
+tr.heading1 {
+background-color:#A4A4A4;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#000;font-weight: bold;font-size:106%;overflow:auto;
+}
+tr.heading2 {
+background-color:#BDBDBD;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#000;font-weight: bold;font-size:103%;overflow:auto;
+}
+tr.heading3 {
+background-color:#D8D8D8;text-align: left; vertical-align: top;padding: 2px 4px 2px 4px;
+border: 0px solid #990066;color:#000;font-weight: bold;font-size:100%;overflow:auto;
+}
+td{
+	text-align: left;
+	vertical-align: middle;
+	padding: 2px 4px 2px 4px;
+	border: 1px solid #ffffff;
+	color:#000;
+	border-right: 0px none #09f;
+	overflow:auto;
+	word-wrap;
+	
+	}
+td.number{
+	text-align: right;
+	vertical-align: middle;
+	padding: 2px 4px 2px 4px;
+	border: 1px solid #ffffff;
+	color:#000;
+	border-right: 0px none #09f;
+}
+td.line{
+	text-align: left;
+	vertical-align: top;
+	padding: 0.5px 0.5px 0.5px 0.5px;
+	border: 1px solid #ffffff;
+	color:#000;
+	border-right: 0px none #09f;
+	overflow:auto;
+	word-wrap;
+	
+	}
+td.success{
+	text-align: left;
+	vertical-align: middle;
+	padding: 2px 4px 2px 4px;
+	border: 1px solid #ffffff;
+	color:#347235;
+	border-right: 0px none #09f;
+}
+td.failure{
+	text-align: left;
+	vertical-align: middle;
+	padding: 2px 4px 2px 4px;
+	border: 1px solid #ffffff;
+	color:#FF0000;
+	border-right: 0px none #09f;
+}
+a 			{color: #09f; text-decoration: none; border-bottom: 0px solid;}
+a:visited 	{color: #c3c; font-weight: normal;}
+a:hover 		{border-bottom-style: dotted;}
+
+h1, h2, h3, h4, h5, h6 {
+font-family:"Lucida Grande",helvetica,lucida,verdana,sans-serif;
+line-height:104%;
+margin:1em 0 0.1em;
+padding:0;
+text-transform:capitalize;
+color:#990000;
+}
+h1 {
+color:#E24628;
+font-size:210%;
+}
+
+h2 {
+background-color:#B5C7E7;
+display:block;
+color:#000;
+font-size:110%;
+height:auto;
+margin:1em -0.7em 0.35em;
+padding:0.2em 0.7em;
+}
+h3 {
+font-size:105%;
+background-color:#FFFFFF;
+color:#000;
+display:block;
+height:auto;
+padding:0.2em 0.7em;
+}
+h4 {
+font-size:100%;
+}
+h5 {
+font-size:95%;
+}
+h6 {
+font-size:90%;
+}
+h4.tip {
+text-align:center;
+text-transform:capitalize;
+}

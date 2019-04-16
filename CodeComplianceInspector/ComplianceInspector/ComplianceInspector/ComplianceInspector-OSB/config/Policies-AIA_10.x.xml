@@ -1,0 +1,169 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Validator default="AIA" time="Dec 01 2009 10:05:12AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor">
+<Policy name="AIA" >
+		 <depends policyName="AIA-Architecture Standards"/>
+		 <depends policyName="AIA-CAVS Enablement Standards"/>
+		 <depends policyName="AIA-MetaFile validation"/>
+		 <depends policyName="AIA-Development Standards"/>
+		 <depends policyName="AIA-Documentation Standards"/>
+		 <depends policyName="AIA-Error Handling Standards"/>
+		 <depends policyName="AIA-Extensibility Standards"/>
+		 <depends policyName="AIA-Security Standards"/>
+		 <depends policyName="AIA-Naming Standards"/>
+</Policy>
+<Policy name="AIA-Architecture Standards" >
+	<Assertion name="TXNEnableInAsyncFFMEPABCSCheck" />
+	<Assertion name="SetCAVSEndPointFileExistsCheck" />
+	<Assertion name="NoLocalWSDLInEBSCheck" />
+	<Assertion name="TXNEnableInAsyncFFMEPReqCheck" />
+	<Assertion name="WSDLFromCentralLocationInEBSCheck" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPReqCheck1" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPReqCheck" />
+	<Assertion name="EBMToFaultXSLFileExistsInProvCheck" />
+	<Assertion name="NoLocalPartnerLinkWSDLInEBFCheck" />
+	<Assertion name="NoLocalSchemasInEBFCheck" />
+	<Assertion name="NoLocalSchemaImportsInWSDLOfABCSorEBFCheck" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPProvCheck" />
+	<Assertion name="NoTargetSysIdHardWiringInXREFLookupCheck" />
+	<Assertion name="TXNEnableInAsyncFFMEPABCSCheck1" />
+	<Assertion name="EBMIDUsedForCorrelation" />
+	<Assertion name="EBMHeaderVariableInABCSCheck" />
+	<Assertion name="NoLocalSchemasInABCSCheck" />
+	<Assertion name="NoTargetSysHardWiringInPopulateXrefCheck" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPABCSCheck" />
+	<Assertion name="FaultPolicyFileExistsInABCSAndEBFCheck" />
+	<Assertion name="ABCSDoesNotPopulateTargetCheck" />
+	<Assertion name="RunTimeFaultWSDLimportInABCSImplCheck" />
+	<Assertion name="EBMHeaderVariableAssignedCheck" />
+	<Assertion name="DynamicPlinkEnablementCheck" />
+	<Assertion name="NoTargetSysIdHardWiringInDVMLookupCheck" />
+	<Assertion name="ExtensionStandardPatternCheck" />
+	<Assertion name="OperationsNotExistInRefWSDLCheck" />
+	<Assertion name="TXNEnableInAsyncFFMEPReqCheck1" />
+	<Assertion name="CorrelationUsedWithReceiveforAsync" />
+	<Assertion name="MessageTypeNotExistInRefWSDLCheck" />
+	<Assertion name="CorrelationUsedWithInvokeforAsync" />
+	<Assertion name="NoLocalPartnerLinkWSDLInABCSCheck" />
+	<Assertion name="CorrelationSetsDefinedforAsyncReqABCS" />
+	<Assertion name="wsdlRuntimeLocationExistForPlinkCheck" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPABCSCheck1" />
+	<Assertion name="ABMToEBMViceVersaCustomXSLExistsCheck" />
+	<Assertion name="EBSPLinkWSDLRuntimeLocationCheck" />
+	<Assertion name="AddTargetSystemIDFileExistsInProvCheck" />
+	<Assertion name="NoLocalEBSPLinkWSDLCheck" />
+	<Assertion name="XSLNoEmptyElementsOutputCheck" />
+	<Assertion name="PortTypeNotExistInRefWSDLCheck" />
+	<Assertion name="EBSPLinkWSDLLocationCheck" />
+	<Assertion name="preferredPortProperyExistForEBSPlinkCheck" />
+	<Assertion name="NoLocalWSDLImportsInWSDLOfABCSorEBFCheck" />
+	<Assertion name="AddTargetSystemIDCallExistsInProvCheck" />
+	<Assertion name="TXNEnableInAsyncDelRespMEPProvCheck1" />
+	<Assertion name="wsdlLocationPropertyExistForPlinkCheck" />
+	<Assertion name="NoLocalSchemasInEBSCheck" />
+
+</Policy>
+
+<Policy name="AIA-CAVS Enablement Standards" >
+	<Assertion name="EBMHeaderPopulationCheck1" />
+	<Assertion name="EBMHeaderPopulationCheck2" />
+	<Assertion name="EBMHeaderPopulationMessageProcInsCheck" />
+	<Assertion name="EBMHeaderPopulationWSACheck" />
+	<Assertion name="CAVSRoutingForEveryOperationsInEBSCheck" />
+	<Assertion name="EBMHeaderPopulationCheck4" />
+	<Assertion name="EBMHeaderPopulationCheck3" />
+	<Assertion name="EBMHeaderPopulationCheck" />
+	<Assertion name="CAVSRoutingFilterExprInEBSCheck" />
+
+</Policy>
+
+<Policy name="AIA-Development Standards" >
+	<Assertion name="AIAServiceConfigFileExistsCheck" />
+	<Assertion name="AIAConfigEntryDefaultSystemIdDefinedCheck" />
+
+</Policy>
+
+<Policy name="AIA-Documentation Standards" >
+	<Assertion name="PortTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="OperationTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="MessageTypeDocInABCSImplWSDLCheck" />
+	<Assertion name="WSDLDocumentationInABCSImplCheck" />
+
+</Policy>
+
+<Policy name="AIA-Error Handling Standards" >
+	<Assertion name="CatchBlkProvABCSAllMEPNonPLCheck1" />
+	<Assertion name="CatchBlkProvABCSSyncCheck" />
+	<Assertion name="CatchBlkProvABCSASyncRespCheck1" />
+	<Assertion name="CatchBlockRemoteFaultExistInBPELCheck" />
+	<Assertion name="CatchBlkProvABCSAllMEPNonPLCheck" />
+	<Assertion name="CatchBlkProvABCSASyncRespCheck" />
+	<Assertion name="CatchBlockBindingFaultExistInBPELCheck" />
+	<Assertion name="CatchBlkABCSAllMEPCheck" />
+	<Assertion name="CatchBlkReqABCSAllMEPNonPLCheck" />
+	<Assertion name="CatchBlkReqABCSSyncCheck" />
+	<Assertion name="FaultPolicyEnabledforABCSAndEBFCheck" />
+	<Assertion name="CatchBlkReqABCSAllMEPNonPLCheck1" />
+
+</Policy>
+
+<Policy name="AIA-Extensibility Standards" >
+	<Assertion name="MaxExtPointsInSyncMEPCheck" />
+	<Assertion name="ExtServicePlinkRuntimeLocCheck" />
+	<Assertion name="MinExtPointsInASyncDRespMEPCheck" />
+	<Assertion name="MaxExtPointsInFireAndForgetMEPCheck" />
+	<Assertion name="MaxExtPointsInASyncDRespMEPCheck" />
+	<Assertion name="ExtServiceOperationSyncCheck" />
+	<Assertion name="MinExtPointsInFireAndForgetMEPCheck" />
+	<Assertion name="ExtServicePlinkExistForABCSCheck" />
+	<Assertion name="MinExtPointsInSyncMEPCheck" />
+
+</Policy>
+
+<Policy name="AIA-MetaFile validation" >
+	<Assertion name="GenerateScriptInputXmlNoIndustryXrefs" />
+	<Assertion name="GenerateScriptInputXmlApplicationExists" />
+	<Assertion name="GenerateScriptInputXmlEBSRoutingRulesExists" />
+	<Assertion name="ServiceXmlNoIndustryXrefs" />
+	<Assertion name="GenerateScriptInputXmlNoIndustryDvms" />
+	<Assertion name="ServiceXmlNoIndustryDvms" />
+
+</Policy>
+
+<Policy name="AIA-Naming Standards" >
+	<Assertion name="ExtensionStandardPatternCheck2" />
+	<Assertion name="ResponseEBSInvokeSwitchCheck" />
+	<Assertion name="BPELScopeActivityCheck" />
+	<Assertion name="BPELPickActivityNamingCheck" />
+	<Assertion name="BPELWhileActivityNamingCheck" />
+	<Assertion name="BPELTerminateActivityNamingCheck" />
+	<Assertion name="BPELReplyActivityNamingCheck" />
+	<Assertion name="BPELDecideActivityNamingCheck" />
+	<Assertion name="BPELFlowActivityNamingCheck" />
+	<Assertion name="BPELSequenceActivityNamingCheck" />
+	<Assertion name="ABCSExtWSDLExistsAndNamingCheck" />
+	<Assertion name="ABCSProcessWSDLExistsAndNamingCheck" />
+	<Assertion name="BPELInvokeActivityNamingCheck" />
+	<Assertion name="BPELReceiveActivityCheck" />
+	<Assertion name="BPELAssignActivityNamingCheck" />
+	<Assertion name="ABCSTargetNameSpacesCheck" />
+	<Assertion name="BPELWaitActivityNamingCheck" />
+	<Assertion name="ProcessWSDLNameSpacePrefixesNamingCheck" />
+	<Assertion name="BPELThrowActivityNamingCheck" />
+	<Assertion name="BPELSwitchActivityNamingCheck" />
+	<Assertion name="EBFTargetNameSpacesCheck" />
+	<Assertion name="BPELJavaEmbeddingActivityNamingCheck" />
+	<Assertion name="BPELCompensateActivityNamingCheck" />
+
+</Policy>
+
+<Policy name="AIA-Security Standards" >
+	<Assertion name="SecurityServiceWSDLNoLocalImportCheck" />
+	<Assertion name="NoHardWiringUnamePwdInEndpointURICheck" />
+	<Assertion name="DynamicPLinkForSecServiceInReqABCSCheck" />
+	<Assertion name="NoPlinkusageForSettingWSSecPropCheck" />
+	<Assertion name="NoUnamePwdInDVMCheck" />
+	<Assertion name="InvokeSecurityServiceInReqABCSImplCheck" />
+	<Assertion name="XACMLMessageToEBMHeaderInReqABCSCheck" />
+
+</Policy>
+</Validator>

@@ -1,0 +1,504 @@
+<StandardCodeSnippets>
+
+<ExtensionEnablement xmlns="http://schemas.xmlsoap.org/ws/2003/03/business-process/" xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+
+                                            <assign name="[a-zA-Z_0-9]*">
+                                                <copy>
+                                                    <from variable="[a-zA-Z_0-9]*"
+                                                          
+                                                          query="[a-zA-Z_0-9/:]*"/>
+                                                    <to variable="[a-zA-Z_0-9/]*"
+                                                          part="[a-zA-Z_0-9/]*"
+                                                          query="[a-zA-Z_0-9/:]*"/>
+                                                </copy>
+                                            </assign>
+                                            <invoke name="[a-zA-Z_0-9]*"
+                                                    partnerLink="[a-zA-Z_0-9]*(Ext)[a-zA-Z_0-9]*"
+                                                    portType="[a-zA-Z_0-9]*:[a-zA-Z_0-9]*(Ext)[a-zA-Z_0-9]*"
+                                                    operation="[a-zA-Z_0-9]*"
+                                                    inputVariable="[a-zA-Z_0-9]*"
+                                                    outputVariable="[a-zA-Z_0-9]*"/>
+                                            <assign name="[a-zA-Z_0-9]*">
+                                                <copy>
+                                                    <from variable="[a-zA-Z_0-9/]*"
+                                                          
+                                                          query="/[a-zA-Z_0-9/:]*"/>
+                                                    <to variable="[a-zA-Z_0-9/]*"
+                                                          part="[a-zA-Z_0-9/]*"
+                                                          query="[a-zA-Z_0-9/:]*"/>
+                                                </copy>
+                                            </assign>
+</ExtensionEnablement>
+
+<EBMHeaderPopulation xmlns:corecom="http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:wsa="http://schemas.xmlsoap.org/ws/2003/03/addressing">
+        <corecom:EBMHeader>
+		<Basic>
+            <corecom:EBMID></corecom:EBMID>
+            <corecom:EBMName></corecom:EBMName>
+            <corecom:EBOName></corecom:EBOName>
+            <corecom:CreationDateTime></corecom:CreationDateTime>
+            <corecom:VerbCode></corecom:VerbCode>
+		</Basic>			
+		<P4>
+<corecom:MessageProcessingInstruction>
+        <xsl:text>CAVS</xsl:text>
+</corecom:MessageProcessingInstruction>		
+		
+		</P4>
+            <corecom:MessageProcessingInstruction>
+
+			<corecom:EnvironmentCode>
+			</corecom:EnvironmentCode>	
+            <corecom:DefinitionID>
+            </corecom:DefinitionID>
+            </corecom:MessageProcessingInstruction>
+       <corecom:Sender>
+          <corecom:ID></corecom:ID>
+          <corecom:Description></corecom:Description>
+          <corecom:IPAddress></corecom:IPAddress>
+          <corecom:SenderMessageID></corecom:SenderMessageID>
+          <corecom:CallingServiceName></corecom:CallingServiceName>
+          <corecom:Application>
+            <corecom:ID></corecom:ID>
+            <corecom:Version></corecom:Version>
+          </corecom:Application>
+          <corecom:ContactName></corecom:ContactName>
+          <corecom:ContactEmail></corecom:ContactEmail>
+          <corecom:ContactPhoneNumber></corecom:ContactPhoneNumber>
+          <xsl:call-template name="SenderType_ext"/>
+        </corecom:Sender>
+        <corecom:BusinessScope>
+          <corecom:ID></corecom:ID>
+          <corecom:InstanceID></corecom:InstanceID>
+          <corecom:BusinessScopeTypeCode></corecom:BusinessScopeTypeCode>
+          <corecom:EnterpriseServiceName></corecom:EnterpriseServiceName>
+          <corecom:EnterpriseServiceOperationName></corecom:EnterpriseServiceOperationName>
+          <xsl:call-template name="BusinessScopeType_ext"/>
+        </corecom:BusinessScope>
+       <corecom:EBMTracking>
+          <corecom:SequenceNumber></corecom:SequenceNumber>
+          <corecom:ExecutionUnitName></corecom:ExecutionUnitName>
+          <corecom:ImplementationCode></corecom:ImplementationCode>
+          <corecom:ActivityDateTime></corecom:ActivityDateTime>
+        </corecom:EBMTracking>
+		
+		<AsyncSenderServiceName>
+		       <corecom:Sender>
+			   <corecom:WSAddress>
+			   <wsa:ReplyTo>
+			   <wsa:ServiceName></wsa:ServiceName>
+			   </wsa:ReplyTo>
+			   </corecom:WSAddress>
+			   </corecom:Sender>
+		</AsyncSenderServiceName>   
+		
+		<xsl:call-template name="EBMHeaderType_ext"/>
+        </corecom:EBMHeader>
+
+
+</EBMHeaderPopulation>
+
+<AIAErrorHandlingStandards>
+<MantatoryActivities xmlns="http://schemas.xmlsoap.org/ws/2003/03/business-process/" xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+	<AllMEP>
+	<Fault>
+		<Throw>
+			<ABCS>
+				<P2>
+                <throw name="[a-zA-Z_0-9]*" faultName="[a-zA-Z_0-9:]*"
+                       faultVariable="[a-zA-Z_0-9]*"/>
+				</P2>	   
+			</ABCS>		
+		</Throw>
+		<InvokeErrHandler xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/" xmlns:bpelx="http://schemas.oracle.com/bpel/extension">
+			<ABCS>			
+				<P2>
+				<invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*AIAAsyncErrorHandlingBPELProcess"
+                        operation="initiate"
+                        inputVariable="[a-zA-Z_0-9]*"/>
+				<bpelx:exec language="java">(.|\n)*(oracle.apps.aia.core.eh.(IAIAErrorHandler|InvokeBusinessErrorHandler))(.|[\s])*(sendNotification|process)(.|[\s])*</bpelx:exec>
+				</P2>
+			</ABCS>
+		</InvokeErrHandler>
+		<ConstructEntFaultMessage>
+				<P4>		
+					<!--copy>
+                       <from expression="ora:processXSLT\('EBM_to_Fault.xsl',.*\)"/>
+                       <to variable="[a-zA-Z_0-9]*"
+                            part="[a-zA-Z_0-9]*"
+                            query="/[a-zA-Z_0-9]*:Fault"/>
+					</copy-->
+					
+
+					
+					<copy>
+                     <from variable="[a-zA-Z_0-9:]*" part="code"/>
+                      <to variable="[a-zA-Z_0-9:]*"
+                        part="[a-zA-Z_0-9]*"
+                        query=".*(:Code)"/>
+					</copy>
+					<copy>
+                        <from variable="[a-zA-Z_0-9:]*" part="summary"/>
+                        <to variable="[a-zA-Z_0-9]*"
+                            part="[a-zA-Z_0-9:]*"
+                            query=".*(:Text)"/>
+					</copy>
+					<!--copy>
+                        <from variable="SystemFaultMsg" part="detail"/>
+                        <to variable="EnterpriseFaultMsg"
+                            part="CreateReceivedPaymentFault"
+                            query="/corecom:Fault/corecom:FaultNotification/corecom:FaultMessage/corecom:Stack"/>
+                    </copy-->
+				</P4>	
+		</ConstructEntFaultMessage>
+	</Fault>
+	</AllMEP>
+	<SyncMEP>
+		<Fault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+			<ProvABCS>
+				<P2>
+					<reply name="[a-zA-Z_0-9]*"
+                       partnerLink="[a-zA-Z_0-9]*"
+                       portType="[a-zA-Z_0-9:]*(ProvABCSImpl)(V[0-9]*)??([a-zA-Z_0-9]*)"
+                       operation="[a-zA-Z_0-9]*"
+                       variable="[a-zA-Z_0-9]*"
+                       faultName="[a-zA-Z_0-9:]*(F|f)ault[a-zA-Z_0-9]*"/>
+					   
+				</P2>
+			</ProvABCS>
+			<ReqABCS>
+				<P2>
+					<reply name="[a-zA-Z_0-9]*"
+                       partnerLink="[a-zA-Z_0-9]*"
+                       portType="[a-zA-Z_0-9:]*(ReqABCSImpl)(V[0-9]*)??([a-zA-Z_0-9]*)"
+                       operation="[a-zA-Z_0-9]*"
+                       variable="[a-zA-Z_0-9]*"
+                       />
+				</P2>
+			</ReqABCS>
+		</Fault>
+	</SyncMEP>		 
+	<ASyncDelayedRespMEP>
+		<Fault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+			<ProvABCS>
+				<P4>
+				<copy>
+                        <from expression="ora:processXSLT\('[a-zA-Z_0-9]*(EBM_to_)[a-zA-Z_0-9]*(ResponseEBM.xsl)',.*\)"/>
+                        <to variable="[a-zA-Z_0-9]*"
+                            part="[a-zA-Z_0-9]*"/>
+                </copy>	
+				</P4>
+				<P2>
+				<invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*EBSResponse"
+                        operation="[a-zA-Z_0-9:]*Response"
+                        inputVariable="[a-zA-Z_0-9]*"/>
+				</P2>
+			</ProvABCS>			
+		</Fault>			
+	</ASyncDelayedRespMEP>	
+	<ASyncMEP>
+		
+	</ASyncMEP>		
+  </MantatoryActivities>	
+
+  <ActivitiesNotExpected xmlns="http://schemas.xmlsoap.org/ws/2003/03/business-process/" xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+
+  	<AllMEP>
+	<SystemFault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+			<ABCS>
+                <invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*AIAAsyncErrorHandlingBPELProcess"
+                        operation="initiate"
+                        inputVariable="[a-zA-Z_0-9]*"/> 
+			</ABCS>		
+	</SystemFault>
+	</AllMEP>
+
+  <SyncMEP>
+		<SystemFault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">		
+			<ProvABCS>
+                <invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*AIAAsyncErrorHandlingBPELProcess"
+                        operation="initiate"
+                        inputVariable="[a-zA-Z_0-9]*"/>
+			</ProvABCS>
+				
+		</SystemFault>
+	</SyncMEP>		 
+	<ASyncDelayedRespMEP>
+			<SystemFault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+			<ProvABCS>
+                <invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*AIAAsyncErrorHandlingBPELProcess"
+                        operation="initiate"
+                        inputVariable="[a-zA-Z_0-9]*"/>
+			</ProvABCS>
+			</SystemFault>			
+	</ASyncDelayedRespMEP>	
+	<ASyncMEP>
+	<SystemFault xmlns:bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/">
+			<ProvABCS>
+                <invoke name="[a-zA-Z_0-9]*"
+                        partnerLink="[a-zA-Z_0-9]*"
+                        portType="[a-zA-Z_0-9:]*AIAAsyncErrorHandlingBPELProcess"
+                        operation="initiate"
+                        inputVariable="[a-zA-Z_0-9]*"/>
+			</ProvABCS>			
+	</SystemFault>
+	</ASyncMEP>		
+  </ActivitiesNotExpected>	  
+  </AIAErrorHandlingStandards>
+
+  
+  <DocumentationStandards>
+    <ABCSwsdlDoc>
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        <svcdoc:Service xmlns:svcdoc="http://xmlns.oracle.com/Services/Documentation/V2">
+          <svcdoc:Description>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:Description>
+          <svcdoc:ServiceType>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:ServiceType>
+          <svcdoc:DisplayName>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:DisplayName>
+          <svcdoc:ABOName>([A-Za-z_0-9:/\.,\-]*[\s]*[A-Za-z_0-9:\.]*)*</svcdoc:ABOName>
+          <svcdoc:EBOName>([a-zA-Z_0-9:,\-])*</svcdoc:EBOName>
+          <svcdoc:LifecycleStatus>([A-Za-z_0-9:/\.,\-]*[\s]*[A-Za-z_0-9:,\.\-]*)*</svcdoc:LifecycleStatus>
+          <svcdoc:Version>([a-zA-Z_0-9:\.])*</svcdoc:Version>
+          <svcdoc:ImplementationTechnology>([A-Za-z_0-9:/\.-]*[\s]*[A-Za-z_0-9:\.\-]*)*</svcdoc:ImplementationTechnology>
+          <svcdoc:ProductFamily>([A-Za-z_0-9:/\{\}\.\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:ProductFamily>
+          <svcdoc:ProductPillar>([A-Za-z_0-9:/\{\}\.\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:ProductPillar>
+          <svcdoc:ProductCode>([A-Za-z_0-9:/\{\}\.\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:ProductCode>
+        </svcdoc:Service>
+      </documentation>
+    </ABCSwsdlDoc>
+    <ABCSwsdlMessageDoc>
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        <svcdoc:Message xmlns:svcdoc="http://xmlns.oracle.com/Services/Documentation/V2">
+          <svcdoc:Description>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:Description>
+        </svcdoc:Message>
+      </documentation>
+    </ABCSwsdlMessageDoc>
+    <ABCSwsdlOperationDoc>
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        <svcdoc:Operation xmlns:svcdoc="http://xmlns.oracle.com/Services/Documentation/V2">
+          <svcdoc:Description>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:Description>
+          <svcdoc:MEP>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:MEP>
+          <svcdoc:DisplayName>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:DisplayName>
+          <svcdoc:LifecycleStatus>([A-Za-z_0-9:/\{\}\.,\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:LifecycleStatus>
+          <svcdoc:Scope>([A-Za-z_0-9:/\{\}\.,\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:Scope>
+        </svcdoc:Operation>
+      </documentation>
+    </ABCSwsdlOperationDoc>
+    <ABCSwsdlPortTypeDoc>
+      <documentation xmlns="http://schemas.xmlsoap.org/wsdl/">
+        <svcdoc:Interface xmlns:svcdoc="http://xmlns.oracle.com/Services/Documentation/V2">
+          <svcdoc:Description>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:Description>
+          <svcdoc:DisplayName>([A-Za-z_0-9]*(\p{Punct})*[\s]*)*</svcdoc:DisplayName>
+          <svcdoc:LifecycleStatus>([A-Za-z_0-9:/\{\}\.,\-]*[\s]*[A-Za-z_0-9:/\{\}\.\-]*)*</svcdoc:LifecycleStatus>
+        </svcdoc:Interface>
+      </documentation>
+    </ABCSwsdlPortTypeDoc>
+  </DocumentationStandards>
+  
+   <CavsRouting>
+    <routingRule guid="[a-zA-Z_0-9]*" subscriptionType="ANY"
+                 executionType="(Immediate|Deferred)" status="ENABLED">
+      <targetOperation guid="[a-zA-Z_0-9]*" qname="[a-zA-Z_0-9]*"
+                       serviceGUID="[a-zA-Z_0-9]*"
+                       serviceQName="AIASystem.ValidationSystem.AsyncRequestRecipient"
+                       mepDisplayName="[a-zA-Z_0-9]*" mep="[a-zA-Z_0-9]*"/>
+<filterExpression>\{.*[\s]*/[a-zA-Z]*:[a-zA-Z_0-9\-]*/[a-zA-Z]*:EBMHeader/[a-zA-Z]*:MessageProcessingInstruction/[a-zA-Z]*:EnvironmentCode[\s]*.*[\s]*(CAVS).*[\s]*\};[\s]*\{([\s]*namespace[\s]*([a-zA-Z]*)[\s]*=[\s]*((http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V[0-9]*)|(http://xmlns.oracle.com/EnterpriseObjects/([a-zA-Z_0-9:/\-])*))){2}[\s]*\}[\s]*</filterExpression>
+						
+
+      <transformation>
+        <xslFileURL>SetCAVSEndpoint.xsl</xslFileURL>
+      </transformation>
+    </routingRule>
+  </CavsRouting>
+  <!--NonCavsRoutingRule>
+    <filterExpression>\{aia:getServiceProperty\('[|]lcb;[|]http://xmlns.oracle.com/EnterpriseServices/[a-zA-Z_0-9/
+                      ]*[|]rcb;[|][a-zA-Z_0-9
+                      ]*','Routing.ActiveRuleset',false\(\)\)='DEFAULT' [(and)
+                      ]*
+                      \(/ebo:[a-zA-Z_0-9]*/corecom:EBMHeader/corecom:MessageProcessingInstruction/corecom:EnvironmentCode='PRODUCTION'
+                      [(or) ]* [(not)
+                      ]*\(/ebo:[a-zA-Z_0-9]*/corecom:EBMHeader/corecom:MessageProcessingInstruction/corecom:EnvironmentCode/text\(\)\)\)
+                      [(and) ]*
+                      \(/ebo:[a-zA-Z_0-9]*/corecom:EBMHeader/corecom:Target/corecom:ApplicationTypeCode='[a-zA-Z_0-9]*'
+                      [(or) ]*\([(not)
+                      ]*\(/ebo:[a-zA-Z_0-9]*/corecom:EBMHeader/corecom:Target/corecom:ID/text\(\)\)
+                      [(and) ]*
+                      aia:getSystemType\(/ebo:[a-zA-Z_0-9]*/corecom:EBMHeader/corecom:Sender/corecom:ID\)!='[a-zA-Z_0-9]*'\)\)\};\{[(namespace)
+                      ]*
+                      corecom=http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V[0-9]*[(namespace)
+                      ]*
+                      aia=http://www.oracle.com/XSL/Transform/java/oracle.apps.aia.core.xpath.AIAFunctions[(namespace)
+                      ]*
+                      ebo=http://xmlns.oracle.com/EnterpriseObjects/[A-Z_a-z0-9/]*\}</filterExpression>
+  </NonCavsRoutingRule-->
+  
+  <!--ABCSaddTargetSystemIdStandardXSL>
+    <xsl:stylesheet version="1.0"
+                    xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+                    xmlns:plnk="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"
+                    xmlns:ehdr="http://www.oracle.com/XSL/Transform/java/oracle.tip.esb.server.headers.ESBHeaderFunctions"
+                    xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+                    xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+                    xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+                    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                    xmlns:ora="http://schemas.oracle.com/xpath/extension"
+                    xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+                    xmlns:orcl="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+                    xmlns:corecom="http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2"
+                    xmlns:aia="http://www.oracle.com/XSL/Transform/java/oracle.apps.aia.core.xpath.AIAFunctions"
+                    exclude-result-prefixes="([A-Za-z_0-9:-]*[\s]*[A-Za-z_0-9:-]*)*">
+      <xsl:param name="ConfigServiceName">([a-zA-Z_0-9:\/\{\}\.])*</xsl:param>
+      <xsl:param name="ConfigPropertyName">Default.SystemID</xsl:param>
+      <xsl:template match="/*">
+        <xsl:copy>
+          <xsl:apply-templates select="@*|node()"/>
+        </xsl:copy>
+      </xsl:template>
+      <xsl:template match="corecom:EBMHeader">
+        <xsl:copy>
+          <xsl:apply-templates select="@*|node()"/>
+        </xsl:copy>
+      </xsl:template>
+      <xsl:template match="corecom:EBMHeader/corecom:Sender">
+        <xsl:copy-of select="."/>
+        <xsl:if test="not(following-sibling::corecom:Target)">
+          <corecom:Target>
+            <xsl:variable name="TargetID"
+                          select="aia:getServiceProperty($ConfigServiceName,$ConfigPropertyName,true())"/>
+            <corecom:ID>
+              <xsl:value-of select="$TargetID"/>
+            </corecom:ID>
+            <corecom:ApplicationTypeCode>
+              <xsl:value-of select="aia:getSystemType($TargetID)"/>
+            </corecom:ApplicationTypeCode>
+          </corecom:Target>
+        </xsl:if>
+      </xsl:template>
+      <xsl:template match="corecom:EBMHeader/corecom:Target">
+        <corecom:Target>
+          <xsl:copy-of select="@*"/>
+          <xsl:variable name="TargetID">
+            <xsl:choose>
+              <xsl:when test="corecom:ID/text()">
+                <xsl:value-of select="corecom:ID/text()"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="aia:getServiceProperty($ConfigServiceName,$ConfigPropertyName,true())"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <corecom:ID>
+            <xsl:copy-of select="corecom:ID/@*"/>
+            <xsl:value-of select="$TargetID"/>
+          </corecom:ID>
+          <xsl:copy-of select="corecom:OverrideRoutingIndicator"/>
+          <xsl:copy-of select="corecom:ServiceName"/>
+          <corecom:ApplicationTypeCode>
+            <xsl:copy-of select="corecom:ApplicationTypeCode/@*"/>
+            <xsl:choose>
+              <xsl:when test="corecom:ApplicationTypeCode/text()">
+                <xsl:value-of select="corecom:ApplicationTypeCode/text()"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="aia:getSystemType($TargetID)"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </corecom:ApplicationTypeCode>
+          <xsl:copy-of select="corecom:EndPointURI"/>
+          <xsl:copy-of select="corecom:Custom"/>
+        </corecom:Target>
+      </xsl:template>
+      <xsl:template match="@*|node()">
+        <xsl:copy-of select="."/>
+      </xsl:template>
+    </xsl:stylesheet>
+  </ABCSaddTargetSystemIdStandardXSL>
+  
+    <ABCSEBMtoFaultStandardXSL>
+  <xsl:stylesheet version="1.0"
+                xmlns:ehdr="http://www.oracle.com/XSL/Transform/java/oracle.tip.esb.server.headers.ESBHeaderFunctions"
+                xmlns:aia="http://www.oracle.com/XSL/Transform/java/oracle.apps.aia.core.xpath.AIAFunctions"
+                xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+                xmlns:ora="http://schemas.oracle.com/xpath/extension"
+                xmlns:orcl="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+                xmlns:xml="http://www.w3.org/XML/1998/namespace"
+                xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+                xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+                xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+                xmlns:corecom="http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2"
+                exclude-result-prefixes="([A-Za-z_0-9:-]*[\s]*[A-Za-z_0-9:-]*)*">
+
+  <xsl:template match="/">
+    <corecom:Fault>
+        <xsl:apply-templates select="*/corecom:EBMHeader"/>
+        <corecom:FaultNotification>
+            <corecom:ReportingDateTime>
+                <xsl:value-of select="xp20:current-dateTime()"/>
+            </corecom:ReportingDateTime>
+            <corecom:CorrectiveAction/>
+            <corecom:FaultMessage>
+                <corecom:Code/>
+                <corecom:Text/>
+                <corecom:Severity/>
+                <corecom:Stack/>
+            </corecom:FaultMessage>
+            <corecom:FaultingService>
+                <corecom:ID/>
+                <corecom:ImplementationCode/>
+                <corecom:InstanceID/>
+            </corecom:FaultingService>
+        </corecom:FaultNotification>
+    </corecom:Fault>
+  </xsl:template>
+
+  <xsl:template match="corecom:EBMHeader">
+    <corecom:EBMReference>
+        <xsl:apply-templates select="corecom:EBMID"/>
+        <xsl:apply-templates select="corecom:EBMName"/>
+        <xsl:apply-templates select="corecom:EBOName"/>
+        <xsl:apply-templates select="corecom:VerbCode"/>
+        <xsl:apply-templates select="corecom:BusinessScope(\[corecom:BusinessScopeTypeCode='BusinessProcess'\])?"/>
+        <xsl:apply-templates select="corecom:Sender"/>
+    </corecom:EBMReference>
+  </xsl:template>
+
+  <xsl:template match="corecom:BusinessScope">
+    <corecom:BusinessScopeReference>
+        <xsl:apply-templates select="corecom:ID"/>
+        <xsl:apply-templates select="corecom:InstanceID"/>
+        <xsl:apply-templates select="corecom:EnterpriseServiceName"/>
+        <xsl:apply-templates select="corecom:EnterpriseServiceOperationName"/>
+    </corecom:BusinessScopeReference>
+  </xsl:template>
+  
+  <xsl:template match="corecom:Sender">
+    <corecom:SenderReference>
+        <xsl:apply-templates select="corecom:ID"/>
+        <xsl:apply-templates select="corecom:SenderMessageID"/>
+        <xsl:apply-templates select="corecom:TransactionCode"/>
+        <xsl:apply-templates select="corecom:ObjectCrossReference"/>
+        <xsl:apply-templates select="corecom:Application"/>
+    </corecom:SenderReference>  
+  </xsl:template>
+
+  <xsl:template match="*">
+    <xsl:copy-of select="."/>
+  </xsl:template>
+</xsl:stylesheet>
+  </ABCSEBMtoFaultStandardXSL-->
+  
+ 
+</StandardCodeSnippets>
+
+

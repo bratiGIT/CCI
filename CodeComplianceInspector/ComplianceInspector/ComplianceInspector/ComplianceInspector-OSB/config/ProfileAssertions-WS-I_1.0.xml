@@ -1,0 +1,56 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<ProfileAssertionSets time="March 12 2011 11:50:59AM GMT" xmlns="http://www.oracle.com/soa/fp/governance/auditor" version="WS-I_1.0">
+<ProfileAssertionSet name="Bootstrap" >
+<Property name="xpathPrefixes"
+            value='jcameta="http://platform.integration.oracle/blocks/adapter/fw/metadata";ui="http://xmlns.oracle.com/soa/designer/";sca="http://xmlns.oracle.com/sca/1.0";bpel="http://schemas.xmlsoap.org/ws/2003/03/business-process/";xsl="http://www.w3.org/1999/XSL/Transform";aiacfg="http://xmlns.oracle.com/aia/core/config/V1";wsdl="http://schemas.xmlsoap.org/wsdl/";xsd="http://www.w3.org/2001/XMLSchema";xsd="http://www.w3.org/2001/XMLSchema";bpelx="http://schemas.oracle.com/bpel/extension";bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/";corecom="http://xmlns.oracle.com/EnterpriseObjects/Core/Common/V2";wsa="http://schemas.xmlsoap.org/ws/2003/03/addressing;med="http://xmlns.oracle.com/sca/1.0/mediator";'/>
+
+	<ProfileAssertion name="CompositeProfileHarvester"
+                 description="Compliance Inspector recognizes 11g composites based on composite.xml existance and attaches project profile to all the files which are children of composite.xml's parent folder."
+                 executor="XMLProfiler" fileType="composite.xml"
+                 category="ComplianceInspector-Bootstrap" priority="0" include="{ComponentName:.*ABCSImpl.*}">
+	   <Property name="ImplementationType" value="COMPOSITE"/>
+       <Property name="ServiceNameId" xpath="/sca:composite/@name"  />
+       <Property name="ComponentName" value="${dirName}"  />
+       <Property name="ComponentVersion" xpath="/sca:composite/@revision"  />
+	   <Property name="ResolvedCompName" class="oracle.soa.aia.governance.auditor.util.AIAService" func="resolvedProcessStr" args="${ServiceNameId}" expressionLanguage="Java"  visible="false" />	    
+       <Property name="ServiceImplFileName" xpath="/sca:composite/sca:component/sca:implementation.bpel/@src"  />
+	   <Property name="ServiceImplFile" xpath="/sca:composite/sca:component/sca:implementation.bpel/@src"  />
+       <Property name="ServiceImplFilePath" value="${pwd}/${ServiceImplFileName}"  />
+       <Property name="ServiceInterFileName" xpath="/sca:composite/sca:service[contains(@ui:wsdlLocation,'ABCSImpl')]/@ui:wsdlLocation"  />
+       <Property name="ServiceInterFile" class="oracle.soa.aia.governance.auditor.input.artifacts.FileSystemManager" func="getFullPath" args="${ServiceInterFileName}" expressionLanguage="Java"   />
+	   <Property name="targetNamespace" xpath="//sca:import[contains(@location,'${ResolvedCompName}') and not(contains(@location,'Extension')) and not(contains(@location,'Abstract'))]/@namespace" visible="false" /> 
+       <Property name="hostName" xpath="substring-before(substring-after('${targetNamespace}','http://'),'/')"  />
+       <Property name="ServiceType" xpath="substring-before(substring-after('${targetNamespace}','${hostName}/'),'/')"  />
+       <Property name="MEP" class="oracle.soa.aia.governance.auditor.input.artifacts.reader.BPELFileReader" func="getMEP" args="${ServiceImplFilePath}"
+                   expressionLanguage="Java"   />
+	   <Property name="LifeTime" class="oracle.soa.aia.governance.auditor.input.artifacts.reader.BPELFileReader" func="getLifeTime" args="${ServiceImplFilePath}"
+                   expressionLanguage="Java"   />
+	   <Property name="assignTo.1" value=".:*.*" visible="false" />  
+    </ProfileAssertion>
+   
+	<ProfileAssertion name="OthersCompositeProfileHarvester"
+			   description="Compliance Inspector recognizes BPEL composite based on composite.xml existance and attaches project profile to all the files which are children of composite.xml's parent folder." 
+			   executor="XMLProfiler" fileType="composite.xml" category="ComplianceInspector-Bootstrap" priority="0"
+			   exclude="ComponentName:.*ABCSImpl.*" include="{ComponentName:.*}">
+        <Property name="ServiceNameId" xpath="/sca:composite/@name"  />
+        <Property name="ComponentName" value="${ServiceNameId}"  />
+       <Property name="ComponentVersion" xpath="/sca:composite/@revision"  />
+        <Property name="ServiceImplFile" xpath="/sca:composite/sca:component[contains(@name,'EBS')]/sca:implementation.mediator/@src"  />
+        <Property name="assignTo.1" value=".:*.*" visible="false" />  
+  </ProfileAssertion>
+  <ProfileAssertion name="MediatorProfileHarvester"  description="ESB services descriptor"
+                executor="XMLProfiler" fileType="composite.xml"
+                category="ComplianceInspector-Bootstrap" priority="0"
+                include="{ComponentName:.*EBS.*}">
+		<Property name="ImplementationType" value="Mediator"/>
+		<Property name="ServiceName" xpath="/med:Mediator/@name"/>	
+		<Property name="ComponentName" value="${dirName}"/>				
+       <Property name="ComponentVersion" file="${pwd}/composite.xml" xpath="/sca:composite/@revision"  />
+		<!--Property name="ServiceType" xpath="/service/@serviceType"/>
+		<Property name="TypeDescription" xpath="/service/@typeDescription"/-->
+	   <Property name="assignTo.1" value=".:*.*" visible="false" />  
+	</ProfileAssertion>
+
+	
+ </ProfileAssertionSet>
+ </ProfileAssertionSets>

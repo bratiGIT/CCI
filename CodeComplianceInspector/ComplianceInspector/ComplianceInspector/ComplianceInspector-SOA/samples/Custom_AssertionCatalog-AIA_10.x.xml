@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="windows-1252" ?>
+<root>
+ <!-- Place your custom rules for OracleAIARules here-->
+ <RuleSet name="OraleAIARules" xmlns="http://www.oracle.com/aia/PIPvalidator">
+  
+<!-- (case:Add) Adding new rule. Rule name should be unique. 
+The rule below is to check if documentation meets the minimum length set by the company's governance team. 
+There has to be a corresponding test for a new rule in the custom test suite file. --> 
+
+    <Rule name="WSDLDocumentationCheck"
+        description="WSDL Documentation should be of a minimum length as specified by the test file."
+        executor="XPathExecutor" fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl"
+        category="AIA - Documentation Standards" priority="3" context="ABCSImpl">
+    <Param name="xpath"
+           value="//wsdl:documentation/svcdoc:Service/svcdoc:Description"/>
+    <Param name="prefixes" value='${xpathPrefixes};svcdoc="http://xmlns.oracle.com/Services/Documentation/V1"'/> 
+    <Param name="assertCondition" default='XpathValuesLengthGreaterThan'/>
+    <Param name="assertValue" value="${minlength}" default="10"/>
+  </Rule>
+  
+<!-- (case:Update) Copy ABCSTargetNameSpacesCheck from the base rule file, paste it here and change description and assertValue. 
+Now, the namespace pattern starts with http://xmlns.mycompany.com which is different from the xmlns.oracle.com found in the rule definition in the base rule file. 
+No need to have a custom test suite file. --> 
+
+  <Rule name="ABCSTargetNameSpacesCheck"
+        description="Changed for Testing purpose." executor="XPathExecutor"
+        fileType="[a-zA-Z_0-9]*(ABCSImpl)((/V)[0-9])??.wsdl"
+        category="AIA - Naming Standards" priority="1" context="ABCSImpl">
+   <Param name="xpath"
+          default="/wsdl:definitions/@*[contains(local-name(.),'targetNamespace')]"/>
+   <Param name="prefixes" value="${xpathPrefixes}"/>
+   <Param name="assertCondition" default='XpathValuesPatternMatch'/>
+   <Param name="assertValue"
+          value='(http://xmlns.mycompany.com/ABCSImpl/)${aia:Application}(/)(Core|(Industry/${aia:IndustryName}))?{1}/[a-zA-Z_0-9_/]*(${aia:ServiceOperation}${aia:Application}(${aia:IndustryName})?${aia:ComponentType})((/V)[0-9])??'/>
+  </Rule>
+  
+  <Rule name="BPELAssignActivityNamingCheck" description="All Assign activities in a BPEL process should start with a prefix of Assign followed by activity name. Pattern: Assign{Name of what is being assigned}"
+              executor="XPathExecutor" fileType="*.bpel" category="AIA - Naming Standards" priority="3" context="ABCSImpl,EBF">
+             <Param name="xpath" default="//bpel:assign/@name"/>
+             <Param name="prefixes" value="${xpathPrefixes}" />   
+             <Param name="assertCondition" default='XpathValuesNotMatchPattern' />
+             <Param name="assertValue"  value='${naming}' default=''/>
+            <Param name="noNodeFlag" default='true'/>
+  </Rule>	
+  
+  
+<!--(case:Remove) Ignoring test execution by putting executor="NAExecutor". No need to have a custom test suite file.--> 
+
+  <Rule name="EBMHeaderVariableAssingnedCheck"
+        description="ABCSImpl BPEL file should contain a variable called EBM_HEADER and it should be assigned a value from a incoming EBM. This variable is used by Error handling process to get EBMHeader values for logging and notifications. Please refer to Integration Developer Guide for further details."
+        executor="NAExecutor" fileType="*.bpel"
+        category="AIA - Architecture Standards" priority="2" context="ABCSImpl">
+   <Param name="xpath"
+          default="//bpel:assign/bpel:copy/bpel:to[contains(@variable,'EBM_HEADER')]"/>
+   <Param name="prefixes" value="${xpathPrefixes}"/>
+   <Param name="assertCondition" default='XpathExists'/>
+  </Rule>
+  
+  
+  
+ </RuleSet>
+</root>
